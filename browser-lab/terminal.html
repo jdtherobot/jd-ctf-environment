@@ -70,7 +70,13 @@
 </head>
 <body>
   <div class="bar">
-    <span class="brand"><span class="dot" id="statusdot"></span> chiral&nbsp;lab · terminal</span>
+    <span class="brand">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:20px;height:20px;color:var(--gold);flex:none">
+        <rect x="2.5" y="2.5" width="19" height="19" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M7 7 L11 10 L7 13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17 17 L13 14 L17 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="dot" id="statusdot"></span> chiral&nbsp;lab · terminal</span>
     <span class="status" id="status">initializing…</span>
     <span class="spacer"></span>
     <button class="tb" id="btn-save" title="Snapshot the machine to this browser">💾 Save snapshot</button>
