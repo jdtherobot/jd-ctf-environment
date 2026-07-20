@@ -17,7 +17,7 @@
   /* chrome themes with the site; the TTY screen stays black. Orthogonal system:
      square corners, no shadows. */
   :root{ --shadow:none; }
-  .tab,.tb,.file,.tool,.btn,.menu-pop,dialog,.failcard,.warehouse-cta,.btn-warehouse{ border-radius:0 !important; }
+  .tab,.tb,.file,.tool,.btn,.mini,.app,.btn-dl,.menu-pop,dialog,.failcard,.warehouse-cta,.btn-warehouse{ border-radius:0 !important; }
   .bar,.toolbox{ background:var(--panel) !important; }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -213,6 +213,9 @@
   .btn-dl:hover{opacity:.9}
   .btn-dl.done{background:transparent;color:var(--accent);cursor:default}
   .dl-note{font-size:12px;color:var(--ink-dim);margin:8px 0 0;line-height:1.5}
+  .dl-files{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+  .dl-files li{font-family:var(--mono);font-size:12px;color:var(--ink);border:1px solid var(--line);padding:5px 9px;background:var(--panel)}
+  .dl-files li::before{content:"›";color:var(--accent);margin-right:6px}
 
   /* ---- mail-client view for .eml ---- */
   .mailview{padding:18px 20px}
@@ -646,9 +649,9 @@ file *              # ask what each file really is</pre>
         '</div></div>';
     });
     if(c.boxFiles && c.boxFiles.length){
-      var n=c.boxFiles.length;
-      html += '<button class="btn-dl" id="btn-dl">⤓ Download '+(n>1?"all ":"")+"to the box →</button>"+
-              '<p class="dl-note">Pulls '+n+' file'+(n>1?'s':'')+' onto the terminal and drops you into <code>~/challenges/'+c.slug+'</code>. Like the real thing — you fetch the artifact, then work on it.</p>';
+      html += '<button class="btn-dl" id="btn-dl">⤓ Download to the box →</button>'+
+              '<p class="dl-note">Adds the following to your challenge session at <code>~/challenges/'+esc(c.slug)+'</code>. Access them in the terminal.</p>'+
+              '<ul class="dl-files">'+c.boxFiles.map(function(f){ return '<li>'+esc(f)+'</li>'; }).join("")+'</ul>';
     }
     e.innerHTML=html;
     Array.prototype.forEach.call(e.querySelectorAll("[data-view]"),function(btn){
