@@ -23,17 +23,18 @@ if [ -z "${DOCKER_CONFIG:-}" ] && docker info 2>/dev/null | grep -qi 'desktop'; 
   TMPCFG="$(mktemp -d)"; printf '{}' > "$TMPCFG/config.json"; export DOCKER_CONFIG="$TMPCFG"
 fi
 
-echo "== 1) assemble sanitized payload (player files only) =="
-PAY="$HERE/payload"; rm -rf "$PAY"; mkdir -p "$PAY"
-cp "$REPO_ROOT/participant/challenges/01-photo-day/email.eml"                 "$PAY/email.eml"
-cp "$REPO_ROOT/participant/challenges/02-stegosaurus-1/stego_badger.jpeg"     "$PAY/stego_badger.jpeg"
-cp "$REPO_ROOT/participant/challenges/04-stegosaurus-3/Honey.jpeg"            "$PAY/Honey.jpeg"
-cp "$REPO_ROOT/participant/challenges/01-photo-day/BRIEF.md"                  "$PAY/BRIEF-01-photo-day.md"
-cp "$REPO_ROOT/participant/challenges/02-stegosaurus-1/BRIEF.md"              "$PAY/BRIEF-02-stegosaurus-1.md"
-cp "$REPO_ROOT/participant/challenges/03-stegosaurus-2-warehouse/BRIEF.md"    "$PAY/BRIEF-03-warehouse.md"
-cp "$REPO_ROOT/participant/challenges/04-stegosaurus-3/BRIEF.md"             "$PAY/BRIEF-04-stegosaurus-3.md"
-cp "$REPO_ROOT/build/wordlists/trimmed.txt"                                  "$PAY/wordlist.txt"
-ls -la "$PAY"
+echo "== 1) assemble sanitized payload — per-challenge staging under opt/ctf/ =="
+# The box starts EMPTY. Each challenge's files stage under /opt/ctf/<slug>/ and
+# only land in ~/challenges/<slug>/ when the player 'downloads' them (workbench
+# button or the `ctf` helper) — mirroring real forensics. Briefs are shown in the
+# web UI, so the box carries only the artifacts.
+PAY="$HERE/payload"; rm -rf "$PAY"; mkdir -p "$PAY/opt/ctf/01-photo-day" "$PAY/opt/ctf/02-stegosaurus-1" "$PAY/opt/ctf/04-stegosaurus-3"
+cp "$REPO_ROOT/participant/challenges/01-photo-day/email.eml"             "$PAY/opt/ctf/01-photo-day/email.eml"
+cp "$REPO_ROOT/participant/challenges/02-stegosaurus-1/stego_badger.jpeg" "$PAY/opt/ctf/02-stegosaurus-1/stego_badger.jpeg"
+cp "$REPO_ROOT/build/wordlists/trimmed.txt"                              "$PAY/opt/ctf/02-stegosaurus-1/wordlist.txt"
+cp "$REPO_ROOT/participant/challenges/04-stegosaurus-3/Honey.jpeg"        "$PAY/opt/ctf/04-stegosaurus-3/Honey.jpeg"
+cp "$REPO_ROOT/build/wordlists/trimmed.txt"                              "$PAY/opt/ctf/04-stegosaurus-3/wordlist.txt"
+find "$PAY" -type f | sort
 
 echo "== 2) secret-scan the payload (must PASS before it goes in an image) =="
 bash "$REPO_ROOT/build/secret-scan/scan.sh" "$PAY"

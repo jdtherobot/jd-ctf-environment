@@ -655,7 +655,7 @@ file *              # ask what each file really is</pre>
   function downloadChallenge(c){
     if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
     var slug=c.slug, n=(c.boxFiles||[]).length;
-    runInTerminal("mkdir -p ~/challenges/"+slug+" && cp /opt/ctf/"+slug+"/* ~/challenges/"+slug+"/ 2>/dev/null && cd ~/challenges/"+slug+" && ls -la");
+    runInTerminal("ctf "+slug);   // baked shell helper: copies /opt/ctf/<slug> in and cds
     toast("Downloaded "+n+" file"+(n>1?"s":"")+" to ~/challenges/"+slug+" — you’re in that folder now.");
     var b=$("btn-dl"); if(b){ b.textContent="✓ Downloaded — files are on the box"; b.disabled=true; b.classList.add("done"); }
   }
