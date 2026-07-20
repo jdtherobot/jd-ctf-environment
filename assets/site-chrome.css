@@ -1,0 +1,125 @@
+/* ==========================================================================
+   Chiral Lab — britt.gg site banner
+   Ported from the main site's Nav / Career-Plan-app SiteHeader so the lab
+   reads as part of britt.gg and always offers a way back. Spike mark + JD
+   BRITT wordmark, the four section links, and the day/night toggle — same
+   pill as the rest of the site, persisted to localStorage('jdb-mode').
+   Depends on site-theme.css.
+   ========================================================================== */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--edge);
+  font-family: var(--mono);
+}
+.site-header__inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  height: 60px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+.site-header__mark {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+.site-header__mark polyline {
+  stroke: var(--gold); /* material */
+}
+.site-header__wordmark {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.site-header__links {
+  display: flex;
+  gap: 26px;
+}
+.site-header__links a {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.18s, color 0.18s;
+}
+.site-header__links a:hover {
+  opacity: 1;
+  color: var(--text);
+}
+
+.site-header__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-header__mode-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  width: 36px;
+  color: var(--text);
+}
+.site-header__toggle {
+  width: 42px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--edge);
+  border: none;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.site-header__thumb {
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--gold);
+  transition: transform 0.2s;
+}
+.site-header[data-night='1'] .site-header__thumb {
+  transform: translateX(20px);
+}
+
+.site-header__toggle:focus-visible,
+.site-header__brand:focus-visible,
+.site-header__links a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* below the main site's nav breakpoint, hide the section links (the wordmark
+   still returns home) */
+@media (max-width: 720px) {
+  .site-header__links {
+    display: none;
+  }
+  .site-header__inner {
+    padding: 0 18px;
+  }
+}
