@@ -6,7 +6,6 @@
 <title>Chiral Lab — Steganography CTF</title>
 <link rel="stylesheet" href="assets/site-theme.css">
 <link rel="stylesheet" href="assets/site-chrome.css">
-<link rel="stylesheet" href="assets/lab-header.css">
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; }
@@ -22,9 +21,18 @@
   .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 72px; }
   a { color: var(--accent); }
 
+  /* small page logo — replaces the previous small lab mark, sized like the
+     site header wordmark, not a hero block */
+  .lab-brand { display: flex; align-items: baseline; gap: 9px; margin: 40px 0 0; }
+  .lab-brand__glyph { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--gold); }
+  .lab-brand__name {
+    font-family: var(--display); font-weight: 700; font-size: 17px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--text);
+  }
+
   .kicker {
     font-family: var(--mono); font-size: 11px; letter-spacing: .18em;
-    text-transform: uppercase; color: var(--ink-dim); margin: 40px 0 14px;
+    text-transform: uppercase; color: var(--ink-dim); margin: 28px 0 14px;
   }
   .lede {
     font-family: var(--sans); font-size: clamp(15px, 1.8vw, 17px);
@@ -81,20 +89,10 @@
 <body>
 <div class="wrap">
 
-  <header class="lab-header" tabindex="-1">
-    <span class="lab-header__corner lab-header__corner--tl"></span>
-    <span class="lab-header__corner lab-header__corner--br"></span>
-    <div class="lab-header__meta">
-      <span>SYS.02 // BRITT.GG</span>
-      <span>NODE: HANDSHAKE</span>
-    </div>
-    <div class="lab-header__prompt">
-      <span class="lab-header__glyph">&gt;_</span>
-      <span class="lab-header__name">Chiral Lab</span>
-    </div>
-    <div class="lab-header__rule"></div>
-    <p class="lab-header__status">isolated node linked to network &mdash; <span class="accent">connection open</span></p>
-  </header>
+  <div class="lab-brand">
+    <span class="lab-brand__glyph">&gt;_</span>
+    <span class="lab-brand__name">Chiral Lab</span>
+  </div>
 
   <p class="kicker">Steganography CTF</p>
   <p class="lede">Four steganography challenges with their briefings and files, plus a real 32-bit
@@ -103,10 +101,10 @@
   <div class="surfaces">
     <div class="surface">
       <span class="surface__tag">Start here</span>
-      <h2>Guided Workbench</h2>
+      <h2>Launch challenges</h2>
       <p>Pick a challenge, read the briefing, open its files, and work in the terminal beside it. A
       built-in facilitator gives nudges and — when you ask — reveals the toolbox.</p>
-      <div class="btnrow"><a class="btn btn-primary" href="browser-lab/workbench.html">Open the workbench →</a></div>
+      <div class="btnrow"><a class="btn btn-primary" href="browser-lab/workbench.html">Launch challenges →</a></div>
     </div>
     <div class="surface">
       <h2>Terminal only</h2>
