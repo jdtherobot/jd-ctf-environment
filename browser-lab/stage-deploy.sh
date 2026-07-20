@@ -28,6 +28,10 @@ DEST="${1:-$REPO_ROOT/build/scratch/lab/deploy}"
 
 rm -rf "$DEST"; mkdir -p "$DEST/browser-lab"
 
+# GitHub Pages must serve files as-is: Jekyll parses .bin image objects as YAML
+# front matter and fails the build. .nojekyll disables it.
+touch "$DEST/.nojekyll"
+
 # 1) root landing
 cp "$REPO_ROOT/index.html" "$DEST/index.html"
 
