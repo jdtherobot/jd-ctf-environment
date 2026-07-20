@@ -3,23 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Badger Lab — Steganography CTF</title>
+<title>Chiral Lab — Steganography CTF</title>
+<link rel="stylesheet" href="../assets/site-theme.css">
+<link rel="stylesheet" href="../assets/site-chrome.css">
 <style>
-  :root{
-    --bg:#0c0f0d; --panel:#121714; --panel-2:#0e1310; --ink:#d7e2d5; --ink-dim:#8fa38c;
-    --line:#222e26; --accent:#5ef2a0; --accent-2:#f2c14e; --danger:#ff7a7a;
-    --shadow:0 12px 40px rgba(0,0,0,.45);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-    --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  }
-  @media (prefers-color-scheme: light){
-    :root{ --bg:#eef2ee; --panel:#ffffff; --panel-2:#f4f7f4; --ink:#152018; --ink-dim:#54685a;
-      --line:#d6e0d6; --accent:#0a8f52; --accent-2:#9a6b00; --shadow:0 12px 40px rgba(20,40,25,.12); }
-  }
-  :root[data-theme="dark"]{ --bg:#0c0f0d; --panel:#121714; --panel-2:#0e1310; --ink:#d7e2d5; --ink-dim:#8fa38c;
-    --line:#222e26; --accent:#5ef2a0; --accent-2:#f2c14e; --shadow:0 12px 40px rgba(0,0,0,.45); }
-  :root[data-theme="light"]{ --bg:#eef2ee; --panel:#ffffff; --panel-2:#f4f7f4; --ink:#152018; --ink-dim:#54685a;
-    --line:#d6e0d6; --accent:#0a8f52; --accent-2:#9a6b00; --shadow:0 12px 40px rgba(20,40,25,.12); }
+  /* orthogonal system: square corners, no shadows */
+  :root{ --shadow:none; }
+  .card,.btn,.pill,.m,.smallscreen{ border-radius:0 !important; }
+  .card{ background:var(--panel) !important; box-shadow:none !important; }
 
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -90,12 +81,8 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="1.5" y="4" width="21" height="16" rx="3" stroke="var(--accent)" stroke-width="1.6"/>
-        <path d="M6 9l3 3-3 3" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12.5 15H17" stroke="var(--accent-2)" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      <span>badger&nbsp;lab</span>
+      <span class="lab-header__glyph" style="font-size:20px">&gt;_</span>
+      <span>chiral&nbsp;lab</span>
     </div>
     <span class="pill">client-side&nbsp;·&nbsp;no server</span>
   </header>
@@ -141,24 +128,9 @@
 
   <footer>
     <span>Academic / event use. The challenge files are the sanitized player distribution — no answers baked in.</span>
-    <span style="display:flex;gap:12px;align-items:center">
-      <button class="themebtn" id="themebtn">◐ theme</button>
-    </span>
   </footer>
 </div>
 
-<script>
-  (function(){
-    var root=document.documentElement, key="badgerlab-theme";
-    try{ var s=localStorage.getItem(key); if(s) root.setAttribute("data-theme",s); }catch(e){}
-    document.getElementById("themebtn").addEventListener("click",function(){
-      var cur=root.getAttribute("data-theme");
-      var next = cur==="light" ? "dark" : (cur==="dark" ? "light"
-                 : (matchMedia("(prefers-color-scheme: dark)").matches?"light":"dark"));
-      root.setAttribute("data-theme",next);
-      try{ localStorage.setItem(key,next); }catch(e){}
-    });
-  })();
-</script>
+<script defer src="../assets/site-chrome.js"></script>
 </body>
 </html>

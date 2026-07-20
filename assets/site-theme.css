@@ -1,0 +1,74 @@
+/* ==========================================================================
+   Chiral Lab — britt.gg design tokens (Cybernetic Premium)
+   Ported from the main site (src/styles/colors.css + typography.css).
+   Day = cream page, Night = carbon page. Gold is a MATERIAL, never small ink.
+   Screens/terminals stay carbon in both modes — a screen is unlit either way.
+
+   The lab pages consume the semantic names they already used (--bg, --ink,
+   --accent, --line, --panel …); this file redefines those against the site
+   system and switches them on html[data-mode]. Default (no attribute) = day.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* material — constant across modes */
+  --gold: #c9a45e;
+  --cream: #ece2c6;
+  --carbon: #17161a;
+  --screen: #0e0d10;      /* device/terminal ground — always dark */
+  --screen-bar: #131217;
+
+  /* type */
+  --display: 'Rajdhani', system-ui, sans-serif;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius: 0;            /* the system is orthogonal */
+  --shadow: none;         /* no shadows anywhere */
+}
+
+/* DAY — cream page ---------------------------------------------------------- */
+:root,
+:root[data-mode='day'] {
+  --bg: #ece2c6;
+  --ink: #1e1b12;
+  --text: #1e1b12;
+  --ink-dim: #4a4436;
+  --muted: #4a4436;
+  --line: #c9b98a;
+  --line-soft: #d8cba2;
+  --edge: #c9b98a;
+
+  --panel: #e3d7b5;       /* subtly raised card on the cream page */
+  --panel-2: #dccfa8;
+
+  --accent: #c9a45e;      /* material gold — the single accent */
+  --accent-2: #8a6f2e;    /* dimmer gold for secondary marks (large only) */
+  --danger: #a3382d;
+
+  --gold-06: rgba(201, 164, 94, 0.06);
+  --gold-hair: rgba(201, 164, 94, 0.35);
+}
+
+/* NIGHT — carbon page ------------------------------------------------------- */
+:root[data-mode='night'] {
+  --bg: #17161a;
+  --ink: #ece2c6;
+  --text: #ece2c6;
+  --ink-dim: #c9bfa6;
+  --muted: #c9bfa6;
+  --line: #3a3626;
+  --line-soft: #2c2a20;
+  --edge: #3a3626;
+
+  --panel: #1e1d22;
+  --panel-2: #242229;
+
+  --accent: #c9a45e;
+  --accent-2: #c9a45e;
+  --danger: #d06557;
+
+  --gold-06: rgba(201, 164, 94, 0.06);
+  --gold-hair: rgba(201, 164, 94, 0.35);
+}
