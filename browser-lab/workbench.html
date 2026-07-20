@@ -477,7 +477,7 @@ file *              # ask what each file really is</pre>
       { name:"kismet", desc:"Wireless network detector and sniffer." }
     ]},
     { cat:"07 · Reverse Engineering", items:[
-      { name:"radare2", on:true, desc:"Reverse-engineering framework: disassemble, debug, patch.", usage:"r2 <binary>" },
+      { name:"radare2", desc:"Reverse-engineering framework: disassemble, debug, patch." },
       { name:"objdump", on:true, desc:"Disassemble and inspect object files (binutils).", usage:"objdump -d <binary>" },
       { name:"readelf", on:true, desc:"Show the structure of an ELF binary (binutils).", usage:"readelf -a <binary>" },
       { name:"strings", on:true, desc:"Print the printable strings inside a binary (binutils).", usage:"strings <file>" },
@@ -507,7 +507,7 @@ file *              # ask what each file really is</pre>
       { name:"binwalk", on:true, desc:"Scan a file for embedded files and carve them out.", usage:"binwalk <file>   ·   binwalk --dd='.*' <file>", run:"binwalk Honey.jpeg" },
       { name:"foremost", on:true, desc:"Carve files out of a blob by their signatures.", usage:"foremost -i <file> -o out/" },
       { name:"scalpel", on:true, desc:"Fast file carver driven by a header/footer config.", usage:"scalpel <file> -o out/" },
-      { name:"bulk_extractor", on:true, desc:"Scan a file/image for emails, URLs, keys, and more.", usage:"bulk_extractor -o out/ <file>" },
+      { name:"bulk_extractor", desc:"Scan a file/image for emails, URLs, keys, and more." },
       { name:"exiftool", on:true, desc:"Read/edit metadata — EXIF, comments, hidden tags.", usage:"exiftool <file>", run:"" },
       { name:"exiv2", on:true, desc:"Another metadata reader/editor for images.", usage:"exiv2 -pa <file>" },
       { name:"steghide", on:true, desc:"Hide a file in a JPEG behind a passphrase — or extract it.", usage:"steghide extract -sf <file>", run:"" },
