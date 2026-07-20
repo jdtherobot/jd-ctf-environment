@@ -12,8 +12,15 @@
 # Build (32-bit is mandatory):
 #   docker build --platform linux/386 -t badger-lab:i386 .
 # Then package to a 9p filesystem with ./build-image.sh (docker export -> fs2json).
+#
+# Base = bookworm (Debian 12), NOT stable/trixie: Debian 13 dropped the i386
+# bootable kernel (i386 survives only as a multiarch userland), so there is no
+# 32-bit kernel to boot in v86 on trixie. Bookworm still ships linux-image-686-pae
+# plus the whole toolkit (steghide/exiftool/binwalk/openssl/python3). The userland
+# tools are the part the feasibility proof pinned; bookworm's versions solve the
+# same challenges.
 # ============================================================================
-FROM debian:stable-slim
+FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN printf 'Acquire::Languages "none";\nAPT::Install-Recommends "false";\n' > /etc/apt/apt.conf.d/99lean \
@@ -30,9 +37,10 @@ RUN apt-get install -y python3-pip \
  && pip install --break-system-packages --no-cache-dir setuptools stegcracker || true
 
 # --- Kernel + init + 9p boot plumbing --------------------------------------
-# linux-image-686 = the 32-bit kernel; the 9p modules ship with it. We build an
-# initramfs that loads virtio+9p and can mount root=host9p (v86's virtio-9p tag).
-RUN apt-get install -y linux-image-686 initramfs-tools
+# linux-image-686-pae = the 32-bit kernel (bookworm dropped the non-PAE -686 flavour);
+# the 9p modules ship with it. We build an initramfs that loads virtio+9p and can
+# mount root=host9p (v86's virtio-9p tag).
+RUN apt-get install -y linux-image-686-pae initramfs-tools
 
 # Make the initramfs carry the virtio + 9p modules and mount 9p as root.
 RUN printf '%s\n' 9pnet 9pnet_virtio 9p virtio virtio_pci virtio_ring >> /etc/initramfs-tools/modules
@@ -40,20 +48,18 @@ COPY overlay/etc/initramfs-tools/scripts/local-top/9proot /etc/initramfs-tools/s
 RUN chmod +x /etc/initramfs-tools/scripts/local-top/9proot \
  && KREL="$(ls /lib/modules | head -1)" && update-initramfs -u -k "$KREL" || update-initramfs -c -k "$(ls /lib/modules | head -1)"
 
-# Serial-console autologin so the v86 terminal harness lands on a root shell on ttyS0.
-# (Uses agetty --autologin; no password prompt — this is a throwaway lab box.)
-RUN apt-get install -y util-linux \
- && mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d \
- && printf '[Service]\nExecStart=\nExecStart=-/sbin/agetty --autologin root --noclear %%I 115200 vt100\n' \
-      > /etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf \
- && systemctl enable serial-getty@ttyS0.service 2>/dev/null || true
-RUN passwd -d root || true
+# Minimal serial init (PID 1). debian-slim has NO init system, and full systemd
+# is slow/finicky under v86. lab-init just mounts the pseudo-filesystems and
+# execs an interactive bash on ttyS0. Booted via `init=/sbin/lab-init`.
+# (util-linux provides mount/setsid/hostname that lab-init needs.)
+RUN apt-get install -y util-linux
+COPY overlay/sbin/lab-init /sbin/lab-init
+RUN chmod +x /sbin/lab-init && passwd -d root 2>/dev/null || true
 
 # --- Sanitized player files (assembled by build-image.sh into ./payload) -----
-RUN useradd -m -s /bin/bash player || true
-COPY payload/ /home/player/challenges/
-RUN chown -R player:player /home/player/challenges \
- && printf '\ncd ~/challenges 2>/dev/null; echo "Badger Lab — challenge files are in ~/challenges. Start with: exiftool stego_badger.jpeg"\n' >> /home/player/.bashrc
+# Baked at /root/challenges; the shell starts here (see lab-init + /root/.bashrc).
+COPY payload/ /root/challenges/
+RUN printf '\ncd ~/challenges 2>/dev/null\n' >> /root/.bashrc
 
 # A friendly MOTD.
 RUN printf '%s\n' \

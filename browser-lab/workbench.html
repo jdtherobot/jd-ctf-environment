@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Badger Lab — Guided Workbench</title>
+
+<!-- Engine + terminal renderer from their public distributions (v86: BSD-2; xterm.js: MIT),
+     pinned by version/commit. Nothing proprietary is vendored. The markdown renderer and all
+     UI are inline so the page itself has no third-party dependency and cannot fail to render
+     the briefs, even if the emulator can't load. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<style>
+  :root{
+    --bg:#0a0d0b; --panel:#111613; --panel-2:#0e1310; --ink:#d7e2d5; --ink-dim:#8fa38c;
+    --line:#20302a; --line-soft:#182420; --accent:#5ef2a0; --accent-2:#f2c14e; --danger:#ff7a7a;
+    --shadow:0 16px 50px rgba(0,0,0,.5);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;flex-direction:column;
+    min-height:100vh;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  button{font-family:inherit}
+
+  /* ---- top bar ---- */
+  .bar{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#0f1512,#0b100d);flex-wrap:wrap;position:relative;z-index:40}
+  .brand{font-family:var(--mono);font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:9px;white-space:nowrap}
+  .brand svg{display:block}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 8px var(--accent-2)}
+  .dot.ok{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .dot.err{background:var(--danger);box-shadow:0 0 8px var(--danger)}
+  .spacer{flex:1}
+  .status{font-family:var(--mono);font-size:12px;color:var(--ink-dim);white-space:nowrap}
+
+  /* challenge tabs — a genuine sequence, so numbered markers earn their place */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{display:flex;align-items:center;gap:8px;font:600 12.5px/1 var(--sans);background:transparent;color:var(--ink-dim);
+    border:1px solid var(--line);border-radius:9px;padding:7px 11px;cursor:pointer;transition:.12s}
+  .tab .idx{font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+  .tab:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));color:var(--ink)}
+  .tab.active{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--line));
+    background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .tab.active .idx{color:var(--accent)}
+
+  .tb{font:600 12.5px/1 var(--sans);background:transparent;color:var(--ink);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+  .tb:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--accent)}
+  .tb.danger:hover{border-color:color-mix(in srgb,var(--danger) 55%,var(--line));color:var(--danger)}
+  .tb:disabled{opacity:.45;cursor:not-allowed}
+
+  /* help dropdown */
+  .menu{position:relative}
+  .menu-pop{position:absolute;right:0;top:calc(100% + 6px);min-width:248px;background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px;display:none;z-index:50}
+  .menu-pop.open{display:block}
+  .menu-pop button{display:flex;width:100%;gap:11px;align-items:flex-start;text-align:left;background:transparent;border:0;
+    color:var(--ink);padding:10px 11px;border-radius:9px;cursor:pointer;font-size:13.5px}
+  .menu-pop button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .menu-pop .mi-ico{font-size:15px;line-height:1.2;width:20px;text-align:center;flex:none}
+  .menu-pop .mi-t{display:block;font-weight:600}
+  .menu-pop .mi-s{display:block;font-size:12px;color:var(--ink-dim);margin-top:2px}
+  .menu-sep{height:1px;background:var(--line);margin:5px 8px}
+
+  /* ---- stage ---- */
+  .stage{flex:1;display:grid;grid-template-columns:minmax(340px,42fr) 58fr;min-height:0}
+  @media (max-width:900px){ .stage{grid-template-columns:1fr;grid-auto-rows:minmax(0,auto)} }
+
+  .context{border-right:1px solid var(--line);background:var(--panel-2);overflow:auto;min-height:0}
+  @media (max-width:900px){ .context{border-right:0;border-bottom:1px solid var(--line);max-height:52vh} }
+  .ctx-inner{padding:20px 22px 40px;max-width:70ch}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+  .ctx-title{font-size:22px;line-height:1.15;margin:0 0 14px;letter-spacing:-.01em}
+
+  /* rendered markdown (the verbatim brief) */
+  .md{font-size:14.5px;line-height:1.62;color:var(--ink)}
+  .md h1{font-size:20px;margin:22px 0 10px;letter-spacing:-.01em}
+  .md h2{font-size:16.5px;margin:22px 0 8px;color:var(--ink)}
+  .md h3{font-size:14px;margin:18px 0 6px;font-family:var(--mono);letter-spacing:.02em;color:var(--accent-2)}
+  .md p{margin:0 0 12px;color:var(--ink)}
+  .md ul,.md ol{margin:0 0 12px;padding-left:22px}
+  .md li{margin:5px 0}
+  .md strong{color:var(--ink);font-weight:700}
+  .md em{color:var(--accent-2);font-style:italic}
+  .md a{text-decoration:underline}
+  .md code{font-family:var(--mono);font-size:12.5px;background:#0b100d;border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:var(--ink)}
+  .md pre{background:#0b100d;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:0 0 14px}
+  .md pre code{background:transparent;border:0;padding:0;font-size:12.5px;color:var(--ink-dim);white-space:pre}
+  .md blockquote{margin:0 0 14px;padding:8px 14px;border-left:3px solid var(--accent-2);
+    background:color-mix(in srgb,var(--accent-2) 7%,transparent);border-radius:0 8px 8px 0;color:var(--ink)}
+  .md blockquote p:last-child{margin:0}
+  .md hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+  .md table{border-collapse:collapse;width:100%;margin:0 0 14px;font-size:13px;display:block;overflow-x:auto}
+  .md th,.md td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  .md th{background:#0b100d;font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;color:var(--accent)}
+
+  /* evidence / files */
+  .evidence{margin-top:26px;border-top:1px solid var(--line);padding-top:18px}
+  .evidence h4{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 12px}
+  .file{display:flex;gap:13px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:10px;background:var(--panel)}
+  .file .thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid var(--line);flex:none;background:#0b100d}
+  .file .ficon{width:52px;height:52px;border-radius:8px;border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:#0b100d}
+  .file .fmeta{min-width:0;flex:1}
+  .file .fname{font-family:var(--mono);font-size:13px;color:var(--ink);word-break:break-all}
+  .file .fsub{font-size:12px;color:var(--ink-dim);margin-top:2px}
+  .file .fact{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+  .mini{font:600 11.5px/1 var(--sans);background:transparent;color:var(--ink-dim);border:1px solid var(--line);
+    border-radius:8px;padding:7px 9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .mini:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--accent)}
+
+  .warehouse-cta{border:1px solid color-mix(in srgb,var(--accent-2) 40%,var(--line));border-radius:12px;padding:16px;
+    background:color-mix(in srgb,var(--accent-2) 7%,var(--panel))}
+  .warehouse-cta p{margin:0 0 12px;font-size:13.5px;color:var(--ink-dim)}
+  .btn-warehouse{display:inline-flex;align-items:center;gap:9px;font:600 14px/1 var(--sans);background:var(--accent-2);color:#20160a;
+    border:0;border-radius:10px;padding:12px 16px;cursor:pointer}
+  .btn-warehouse:hover{filter:brightness(1.06)}
+
+  /* ---- terminal side ---- */
+  .work{position:relative;background:#000;min-height:0;display:flex;flex-direction:column}
+  @media (max-width:900px){ .work{min-height:60vh} }
+  .work-banner{font-family:var(--mono);font-size:11.5px;padding:7px 14px;border-bottom:1px solid var(--line);
+    background:color-mix(in srgb,var(--accent-2) 9%,#0b100d);color:var(--accent-2)}
+  .work-banner.ok{background:color-mix(in srgb,var(--accent) 8%,#0b100d);color:var(--accent)}
+  .work-banner b{color:var(--ink)}
+  .term-wrap{flex:1;position:relative;min-height:0}
+  #terminal{position:absolute;inset:0;padding:8px 6px}
+
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(600px 300px at 50% 30%,rgba(94,242,160,.07),transparent),#000;z-index:5}
+  .overlay.hidden{display:none}
+  .boot{max-width:560px;width:calc(100% - 40px);font-family:var(--mono)}
+  .boot .title{color:var(--accent);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+  .boot .log{white-space:pre-wrap;font-size:12.5px;color:var(--ink-dim);line-height:1.6;min-height:110px}
+  .boot .bar-outer{height:6px;border:1px solid var(--line);border-radius:6px;margin-top:14px;overflow:hidden}
+  .boot .bar-inner{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .25s}
+  .boot .hint{margin-top:12px;font-size:11.5px;color:var(--ink-dim)}
+
+  /* boot-failure fallback */
+  .failcard{max-width:520px;width:calc(100% - 40px);background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid color-mix(in srgb,var(--danger) 40%,var(--line));border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+  .failcard h3{margin:0 0 8px;font-size:18px}
+  .failcard p{margin:0 0 12px;font-size:13.5px;color:var(--ink-dim);line-height:1.55}
+  .failcard .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font:600 13.5px/1 var(--sans);padding:11px 15px;border-radius:10px;
+    border:1px solid transparent;cursor:pointer;text-decoration:none}
+  .btn-primary{background:var(--accent);color:#04160c}
+  .btn-primary:hover{filter:brightness(1.05)}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn-ghost:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));color:var(--accent)}
+
+  /* ---- toolbox drawer (hidden until the facilitator reveals it) ---- */
+  .toolbox{border-top:1px solid var(--line);background:linear-gradient(180deg,#0f1512,#0b100d);padding:0;display:none}
+  .toolbox.open{display:block}
+  .toolbox-head{display:flex;align-items:center;gap:10px;padding:11px 16px}
+  .toolbox-head .tt{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .toolbox-head .ts{font-size:12px;color:var(--ink-dim)}
+  .toolbox-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:9px;padding:2px 16px 16px}
+  .tool{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:var(--panel);
+    text-align:left;cursor:pointer;transition:.12s}
+  .tool:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line));transform:translateY(-1px)}
+  .tool:disabled{opacity:.55;cursor:default;transform:none}
+  .tool .cmd{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
+  .tool .desc{font-size:12px;color:var(--ink-dim);line-height:1.45}
+
+  /* ---- modal ---- */
+  dialog{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--panel-2));color:var(--ink);
+    border-radius:16px;padding:0;max-width:560px;width:calc(100% - 32px);box-shadow:var(--shadow)}
+  dialog::backdrop{background:rgba(2,6,4,.62);backdrop-filter:blur(2px)}
+  .dlg{padding:22px 22px 20px}
+  .dlg h3{margin:0 0 6px;font-size:19px;display:flex;align-items:center;gap:9px}
+  .dlg .eyebrow{margin-bottom:10px}
+  .dlg p{color:var(--ink);font-size:14px;margin:0 0 12px;line-height:1.55}
+  .dlg .muted{color:var(--ink-dim)}
+  .dlg code{font-family:var(--mono);font-size:12.5px;background:var(--panel-2);border:1px solid var(--line);padding:2px 6px;border-radius:6px;color:var(--ink)}
+  .dlg pre{font-family:var(--mono);font-size:12.5px;background:#0b100d;border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;color:var(--ink-dim)}
+  .dlg .row{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+  .kbd{font-family:var(--mono);font-size:11.5px;background:#0b100d;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+
+  /* file viewer + game overlay */
+  .viewer{max-width:min(1120px,96vw);width:96vw}
+  .viewer .vhead{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .viewer .vhead .vt{font-family:var(--mono);font-size:13px}
+  .viewer .vbody{max-height:min(78vh,760px);overflow:auto;padding:0}
+  .viewer pre.raw{margin:0;padding:16px;font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--ink-dim);white-space:pre-wrap;word-break:break-all}
+  .viewer img.full{display:block;max-width:100%;margin:0 auto;background:#0b100d}
+  .viewer iframe{display:block;width:100%;height:min(80vh,780px);border:0;background:#0b100d}
+
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <span class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="1.5" y="4" width="21" height="16" rx="3" stroke="var(--accent)" stroke-width="1.6"/>
+        <path d="M6 9l3 3-3 3" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12.5 15H17" stroke="var(--accent-2)" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span><span class="dot" id="statusdot"></span> badger&nbsp;lab</span>
+    </span>
+    <nav class="tabs" id="tabs" aria-label="Challenges"></nav>
+    <span class="spacer"></span>
+    <span class="status" id="status">initializing…</span>
+    <div class="menu">
+      <button class="tb" id="btn-help" aria-haspopup="true" aria-expanded="false">✦ Help</button>
+      <div class="menu-pop" id="help-pop" role="menu">
+        <button id="mi-nudge" role="menuitem"><span class="mi-ico">🧭</span><span><span class="mi-t">Give me a nudge</span><span class="mi-s">A hint for this challenge — no spoilers</span></span></button>
+        <button id="mi-toolbox" role="menuitem"><span class="mi-ico">🧰</span><span><span class="mi-t">Reveal the toolbox</span><span class="mi-s">Show every tool on the box, once</span></span></button>
+        <div class="menu-sep"></div>
+        <button id="mi-basics" role="menuitem"><span class="mi-ico">⌨️</span><span><span class="mi-t">Terminal basics</span><span class="mi-s">New to the command line? Start here</span></span></button>
+      </div>
+    </div>
+    <button class="tb" id="btn-save" title="Snapshot the machine to this browser">💾 Save</button>
+    <button class="tb danger" id="btn-reset" title="Discard local changes and reboot a clean box">↺ Reset</button>
+    <a class="tb" href="index.html">← Lab home</a>
+  </div>
+
+  <div class="stage">
+    <!-- Left: the challenge context (verbatim brief + evidence files) -->
+    <section class="context" id="context" aria-label="Challenge briefing">
+      <div class="ctx-inner">
+        <p class="eyebrow" id="ctx-eyebrow">Challenge</p>
+        <h1 class="ctx-title" id="ctx-title">Loading…</h1>
+        <div class="md" id="brief">Loading the briefing…</div>
+        <div class="evidence" id="evidence"></div>
+      </div>
+    </section>
+
+    <!-- Right: the shared, real Linux box -->
+    <section class="work" aria-label="Workbench terminal">
+      <div class="work-banner" id="work-banner">loading engine…</div>
+      <div class="term-wrap">
+        <div id="terminal"></div>
+        <div class="overlay" id="overlay">
+          <div class="boot">
+            <div class="title">▚ booting 32-bit linux · v86</div>
+            <div class="log" id="bootlog"></div>
+            <div class="bar-outer"><div class="bar-inner" id="bootbar"></div></div>
+            <div class="hint">First boot fetches the kernel + lab image. It streams what it needs, so give it a moment; later boots are cached by your browser.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Toolbox: empty and hidden until the facilitator reveals it -->
+      <div class="toolbox" id="toolbox">
+        <div class="toolbox-head">
+          <span class="tt">The toolbox</span>
+          <span class="ts">Click a tool to run it in the terminal.</span>
+        </div>
+        <div class="toolbox-grid" id="toolbox-grid"></div>
+      </div>
+    </section>
+  </div>
+
+<!-- ===================== dialogs ===================== -->
+<dialog id="dlg-nudge">
+  <div class="dlg">
+    <p class="eyebrow">Facilitator</p>
+    <h3 id="nudge-title">A nudge</h3>
+    <p id="nudge-body"></p>
+    <div class="row"><button class="btn btn-primary" data-close>Got it</button></div>
+  </div>
+</dialog>
+
+<dialog id="dlg-reveal">
+  <div class="dlg">
+    <p class="eyebrow">Facilitator</p>
+    <h3>🧰 Open the toolbox?</h3>
+    <p>Every challenge here can be solved with a small set of command-line tools. Part of the fun is
+    figuring out <em>which</em> tool fits — so they stay out of sight until you ask.</p>
+    <p class="muted">Reveal them and a toolbox appears under the terminal. These are the exact tools that,
+    together, crack all four challenges. Click any one to run it in the terminal.</p>
+    <div class="row">
+      <button class="btn btn-ghost" data-close>Keep them hidden</button>
+      <button class="btn btn-primary" id="do-reveal">Reveal the toolbox</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlg-basics">
+  <div class="dlg">
+    <p class="eyebrow">Facilitator</p>
+    <h3>⌨️ Terminal basics</h3>
+    <p>The terminal on the right is a real Linux computer running in your browser. Your challenge files
+    are already on it. A few commands to get moving:</p>
+    <pre>cd ~/challenges     # go to the folder with your files
+ls -la              # list what's there
+cat BRIEF-*.md      # print a briefing to the screen
+less email.eml      # scroll a big file  (press q to quit)
+file *              # ask what each file really is</pre>
+    <p class="muted"><span class="kbd">Ctrl</span>+<span class="kbd">C</span> stops a running command.
+    Use your OS paste shortcut to paste. Stuck on which tool to use? Open <b>Help → Reveal the toolbox</b>.</p>
+    <div class="row"><button class="btn btn-primary" data-close>Close</button></div>
+  </div>
+</dialog>
+
+<dialog id="dlg-viewer" class="viewer">
+  <div class="vhead">
+    <span class="vt" id="viewer-title">file</span>
+    <span class="spacer" style="flex:1"></span>
+    <a class="mini" id="viewer-dl" download>↓ Download</a>
+    <button class="mini" data-close>✕ Close</button>
+  </div>
+  <div class="vbody" id="viewer-body"></div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/v86@0.5.424/build/libv86.js"></script>
+<script>
+"use strict";
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+
+  // =========================================================================
+  //  CHALLENGE DATA — briefs are fetched verbatim from ./challenges/*/BRIEF.md
+  //  Nudges are facilitator hints (no spoilers). No tool names appear here or
+  //  anywhere in the UI until the toolbox is revealed.
+  // =========================================================================
+  var CH = [
+    { id:"01", slug:"01-photo-day", title:"Photo Day",
+      eyebrow:"Challenge 01 · Intercept",
+      brief:"challenges/01-photo-day/BRIEF.md",
+      files:[ {name:"email.eml", kind:"eml", url:"challenges/01-photo-day/email.eml", sub:"the intercepted message"} ],
+      nudge:"It's an email with an attachment. Read the sender's own words closely — he's chatty for a reason, and he even hands you something he swears is “definitely not the password.” Separate the attachment from the letter, then look inside the picture, not just at it." },
+    { id:"02", slug:"02-stegosaurus-1", title:"Stegosaurus 1",
+      eyebrow:"Challenge 02 · Steganography",
+      brief:"challenges/02-stegosaurus-1/BRIEF.md",
+      files:[ {name:"stego_badger.jpeg", kind:"image", url:"challenges/02-stegosaurus-1/stego_badger.jpeg", sub:"the carrier image"} ],
+      nudge:"The photo opens fine, but something is tucked inside the pixels behind a passphrase. The badger's note — “WE WILL, WE WILL…” — is naming a very famous password list. Finish the lyric, then throw that list at the lock." },
+    { id:"03", slug:"03-warehouse", title:"The Memory Warehouse",
+      eyebrow:"Challenge 03 · Architecture",
+      brief:"challenges/03-warehouse/BRIEF.md",
+      warehouse:true,
+      nudge:"This one is a page-table walk, not a file. Take the low 48 bits of the virtual address and split them 9/9/9/9/12. Each 9-bit slice is one coordinate — row, shelf level, bay, sub-section — and the last 12 bits are the box. Resolve it on paper, then walk to that exact box in the warehouse." },
+    { id:"04", slug:"04-stegosaurus-3", title:"Stegosaurus 3",
+      eyebrow:"Challenge 04 · Steganography",
+      brief:"challenges/04-stegosaurus-3/BRIEF.md",
+      files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/04-stegosaurus-3/Honey.jpeg", sub:"one file, many layers"} ],
+      nudge:"One file can be many files stacked together. Start by asking what's really inside: scan it for other file signatures, carve out what you find, and expect at least one decoy. Every layer you crack protects the next one." }
+  ];
+
+  // The exact toolkit that solves all four challenges. Hidden until revealed.
+  // {run} is sent to the shell verbatim (echoed by the box, so novices see it typed).
+  var TOOLS = [
+    { run:"cd ~/challenges && ls -la",                         desc:"See your challenge files and where you are." },
+    { run:"file *",                                            desc:"Ask what each file really is, past its extension." },
+    { run:"exiftool stego_badger.jpeg",                        desc:"Read a photo's metadata — camera, comments, hidden tags." },
+    { run:"steghide extract -sf stego_badger.jpeg",            desc:"Pull a payload hidden inside a JPEG (asks for the passphrase)." },
+    { run:"stegcracker stego_badger.jpeg wordlist.txt",        desc:"Brute-force a steghide passphrase against a wordlist." },
+    { run:"binwalk Honey.jpeg",                                desc:"Scan a file for other files hidden inside it." },
+    { run:"binwalk --dd='.*' Honey.jpeg",                      desc:"Carve every embedded file back out to disk." },
+    { run:"xxd Honey.jpeg | less",                             desc:"Read the raw bytes in hex (press q to quit)." },
+    { run:"openssl enc -d -aes-256-cbc -in FILE -out out.bin", desc:"Decrypt an AES-encrypted blob once you have the key." },
+    { run:"unzip -l FILE.zip",                                 desc:"List what's inside an archive you carved out." },
+    { run:"python3 FILE.py",                                   desc:"Run a helper script (e.g. one you recover mid-challenge)." }
+  ];
+
+  var TOOLBOX_KEY = "badgerlab-toolbox-open";
+
+  // =========================================================================
+  //  Tiny, dependency-free Markdown -> HTML (enough for the briefs: headings,
+  //  bold/italic, inline+fenced code, blockquotes, lists, tables, hr).
+  //  Everything is escaped first, so briefs render as text, never as live HTML.
+  // =========================================================================
+  function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function inline(s){
+    // Split out backtick code spans and format only the non-code segments,
+    // so no placeholder characters are ever injected into the text.
+    return s.split(/(`[^`]+`)/g).map(function(seg){
+      if(seg.length>=2 && seg.charAt(0)==="`" && seg.charAt(seg.length-1)==="`"){
+        return "<code>"+esc(seg.slice(1,-1))+"</code>";
+      }
+      seg=esc(seg);
+      seg=seg.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>");
+      seg=seg.replace(/(^|[^*])\*([^*\n]+)\*/g,"$1<em>$2</em>");
+      seg=seg.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+      return seg;
+    }).join("");
+  }
+  function mdToHtml(src){
+    var lines=src.replace(/\r\n/g,"\n").split("\n"), out=[], i=0;
+    function tableAt(k){ return /\|/.test(lines[k]||"") && /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(lines[k+1]||""); }
+    while(i<lines.length){
+      var ln=lines[i];
+      if(/^```/.test(ln)){ var buf=[]; i++; while(i<lines.length&&!/^```/.test(lines[i])){ buf.push(lines[i]); i++; } i++;
+        out.push("<pre><code>"+esc(buf.join("\n"))+"</code></pre>"); continue; }
+      if(/^\s*#{1,6}\s/.test(ln)){ var m=ln.match(/^\s*(#{1,6})\s+(.*)$/); var l=Math.min(m[1].length,3);
+        out.push("<h"+l+">"+inline(m[2])+"</h"+l+">"); i++; continue; }
+      if(/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(ln)){ out.push("<hr>"); i++; continue; }
+      if(tableAt(i)){
+        var head=lines[i].replace(/^\s*\|/,"").replace(/\|\s*$/,"").split("|").map(function(c){return c.trim();});
+        i+=2; var rows=[];
+        while(i<lines.length && /\|/.test(lines[i]) && lines[i].trim()!==""){
+          rows.push(lines[i].replace(/^\s*\|/,"").replace(/\|\s*$/,"").split("|").map(function(c){return c.trim();})); i++; }
+        var t="<table><thead><tr>"+head.map(function(c){return "<th>"+inline(c)+"</th>";}).join("")+"</tr></thead><tbody>";
+        t+=rows.map(function(r){ return "<tr>"+r.map(function(c){return "<td>"+inline(c)+"</td>";}).join("")+"</tr>"; }).join("");
+        out.push(t+"</tbody></table>"); continue;
+      }
+      if(/^\s*>/.test(ln)){ var q=[]; while(i<lines.length&&/^\s*>/.test(lines[i])){ q.push(lines[i].replace(/^\s*>\s?/,"")); i++; }
+        out.push("<blockquote>"+mdToHtml(q.join("\n"))+"</blockquote>"); continue; }
+      if(/^\s*[-*+]\s+/.test(ln)){ var items=[]; while(i<lines.length&&/^\s*[-*+]\s+/.test(lines[i])){ items.push(lines[i].replace(/^\s*[-*+]\s+/,"")); i++; }
+        out.push("<ul>"+items.map(function(x){return "<li>"+inline(x)+"</li>";}).join("")+"</ul>"); continue; }
+      if(/^\s*\d+[.)]\s+/.test(ln)){ var oi=[]; while(i<lines.length&&/^\s*\d+[.)]\s+/.test(lines[i])){ oi.push(lines[i].replace(/^\s*\d+[.)]\s+/,"")); i++; }
+        out.push("<ol>"+oi.map(function(x){return "<li>"+inline(x)+"</li>";}).join("")+"</ol>"); continue; }
+      if(ln.trim()===""){ i++; continue; }
+      var para=[]; while(i<lines.length && lines[i].trim()!=="" && !/^\s*(#{1,6}\s|>|[-*+]\s|\d+[.)]\s|```)/.test(lines[i]) && !tableAt(i)){ para.push(lines[i]); i++; }
+      out.push("<p>"+inline(para.join(" "))+"</p>");
+    }
+    return out.join("\n");
+  }
+
+  // =========================================================================
+  //  Left panel — render the selected challenge
+  // =========================================================================
+  var current = 0;
+  var briefCache = {};
+
+  function buildTabs(){
+    var t=$("tabs");
+    CH.forEach(function(c,idx){
+      var b=document.createElement("button");
+      b.className="tab"; b.setAttribute("role","tab");
+      b.innerHTML='<span class="idx">'+c.id+'</span>'+c.title;
+      b.addEventListener("click",function(){ select(idx); });
+      t.appendChild(b);
+    });
+  }
+
+  function renderEvidence(c){
+    var e=$("evidence");
+    if(c.warehouse){
+      e.innerHTML =
+        '<h4>The warehouse</h4>'+
+        '<div class="warehouse-cta">'+
+        '<p>Challenge 3 isn’t in a file — it’s a place. Resolve the address, then walk the floor to your box.</p>'+
+        '<button class="btn-warehouse" id="btn-warehouse">Enter the warehouse →</button>'+
+        '</div>';
+      $("btn-warehouse").addEventListener("click",openWarehouse);
+      return;
+    }
+    if(!c.files || !c.files.length){ e.innerHTML=""; return; }
+    var html='<h4>Evidence · these files are on the box, in <code>~/challenges</code></h4>';
+    c.files.forEach(function(f){
+      var isImg = f.kind==="image";
+      var thumb = isImg
+        ? '<img class="thumb" src="'+f.url+'" alt="preview of '+f.name+'">'
+        : '<div class="ficon">✉️</div>';
+      html +=
+        '<div class="file">'+ thumb +
+        '<div class="fmeta"><div class="fname">'+f.name+'</div><div class="fsub">'+(f.sub||"")+'</div></div>'+
+        '<div class="fact">'+
+          '<button class="mini" data-view="'+f.url+'" data-kind="'+f.kind+'" data-name="'+f.name+'">🔍 View</button>'+
+          '<a class="mini" href="'+f.url+'" download="'+f.name+'">↓ Download</a>'+
+        '</div></div>';
+    });
+    e.innerHTML=html;
+    Array.prototype.forEach.call(e.querySelectorAll("[data-view]"),function(btn){
+      btn.addEventListener("click",function(){ openViewer(btn.dataset.name, btn.dataset.url, btn.dataset.kind); });
+    });
+  }
+
+  function select(idx){
+    current=idx; var c=CH[idx];
+    Array.prototype.forEach.call($("tabs").children,function(b,i){ b.classList.toggle("active",i===idx); b.setAttribute("aria-selected", i===idx?"true":"false"); });
+    $("ctx-eyebrow").textContent=c.eyebrow;
+    $("ctx-title").textContent=c.title;
+    renderEvidence(c);
+    var briefEl=$("brief");
+    if(briefCache[c.brief]){ briefEl.innerHTML=briefCache[c.brief]; }
+    else{
+      briefEl.textContent="Loading the briefing…";
+      fetch(c.brief).then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); })
+        .then(function(md){ var html=mdToHtml(md); briefCache[c.brief]=html; if(current===idx) briefEl.innerHTML=html; })
+        .catch(function(){ briefEl.innerHTML='<p class="muted">Couldn’t load this briefing. <a href="'+c.brief+'" target="_blank" rel="noopener">Open it directly</a>.</p>'; });
+    }
+    $("context").scrollTop=0;
+    try{ history.replaceState(null,"","#"+c.slug); }catch(e){}
+  }
+
+  // =========================================================================
+  //  File viewer + warehouse overlay (same dialog, different body)
+  // =========================================================================
+  var dlgViewer=$("dlg-viewer");
+  function openViewer(name,url,kind){
+    $("viewer-title").textContent=name;
+    var dl=$("viewer-dl"); dl.href=url; dl.setAttribute("download",name); dl.style.display="";
+    var body=$("viewer-body");
+    if(kind==="image"){ body.innerHTML='<img class="full" src="'+url+'" alt="'+name+'">'; showDlg(dlgViewer); }
+    else{
+      body.innerHTML='<pre class="raw">loading…</pre>';
+      fetch(url).then(function(r){return r.text();}).then(function(t){ body.querySelector("pre").textContent=t; })
+        .catch(function(){ body.querySelector("pre").textContent="Couldn't load this file. Use Download instead."; });
+      showDlg(dlgViewer);
+    }
+  }
+  function openWarehouse(){
+    $("viewer-title").textContent="The Memory Warehouse";
+    $("viewer-dl").style.display="none";
+    $("viewer-body").innerHTML='<iframe src="../warehouse-game/index.html" title="Memory Warehouse game" allow="autoplay"></iframe>';
+    showDlg(dlgViewer);
+  }
+
+  // =========================================================================
+  //  Help menu, nudges, toolbox reveal
+  // =========================================================================
+  function showDlg(d){ if(typeof d.showModal==="function") d.showModal(); else d.setAttribute("open",""); }
+  document.addEventListener("click",function(e){ if(e.target && e.target.hasAttribute && e.target.hasAttribute("data-close")){ var d=e.target.closest("dialog"); if(d){ if(d.close) d.close(); else d.removeAttribute("open"); } } });
+  Array.prototype.forEach.call(document.querySelectorAll("dialog"),function(d){ d.addEventListener("click",function(e){ if(e.target===d){ if(d.close) d.close(); else d.removeAttribute("open"); } }); });
+
+  var helpPop=$("help-pop"), helpBtn=$("btn-help");
+  function closeHelp(){ helpPop.classList.remove("open"); helpBtn.setAttribute("aria-expanded","false"); }
+  helpBtn.addEventListener("click",function(e){ e.stopPropagation(); var open=helpPop.classList.toggle("open"); helpBtn.setAttribute("aria-expanded",open?"true":"false"); });
+  document.addEventListener("click",function(){ closeHelp(); });
+  helpPop.addEventListener("click",function(e){ e.stopPropagation(); });
+
+  $("mi-nudge").addEventListener("click",function(){ closeHelp(); var c=CH[current];
+    $("nudge-title").textContent="Nudge · "+c.title; $("nudge-body").textContent=c.nudge; showDlg($("dlg-nudge")); });
+  $("mi-basics").addEventListener("click",function(){ closeHelp(); showDlg($("dlg-basics")); });
+  $("mi-toolbox").addEventListener("click",function(){ closeHelp();
+    if($("toolbox").classList.contains("open")){ $("toolbox").scrollIntoView({behavior:"smooth",block:"nearest"}); }
+    else showDlg($("dlg-reveal")); });
+  $("do-reveal").addEventListener("click",function(){ var d=$("dlg-reveal"); if(d.close)d.close(); revealToolbox(true); });
+
+  function buildToolbox(){
+    var g=$("toolbox-grid"); g.innerHTML="";
+    TOOLS.forEach(function(t){
+      var b=document.createElement("button"); b.className="tool";
+      b.innerHTML='<span class="cmd">'+esc(t.run)+'</span><span class="desc">'+esc(t.desc)+'</span>';
+      b.addEventListener("click",function(){ runInTerminal(t.run); });
+      g.appendChild(b);
+    });
+  }
+  function revealToolbox(persist){
+    buildToolbox(); $("toolbox").classList.add("open");
+    if(persist){ try{ localStorage.setItem(TOOLBOX_KEY,"1"); }catch(e){} $("toolbox").scrollIntoView({behavior:"smooth",block:"nearest"}); }
+  }
+
+  // =========================================================================
+  //  v86 terminal — the shared 32-bit Linux box (lab image w/ full toolkit)
+  //  Wiring mirrors terminal.html (same CDN pins, serial console, snapshot).
+  // =========================================================================
+  var V86_SHA="2f1346b0e7d88d4cbbbcc05fe15b4e369c3de23f";
+  var CDN={ wasm:"https://cdn.jsdelivr.net/npm/v86@0.5.424/build/v86.wasm",
+            seabios:"https://cdn.jsdelivr.net/gh/copy/v86@"+V86_SHA+"/bios/seabios.bin",
+            vgabios:"https://cdn.jsdelivr.net/gh/copy/v86@"+V86_SHA+"/bios/vgabios.bin" };
+  // Boot the lab image (Debian i386 + toolkit + challenge files over 9p). If it can't
+  // be reached/booted, the fallback card offers Terminal-only, Retry, and Static mode.
+  var IMG={ baseurl:"./image/dist/flat", basefs:"./image/dist/fs.json",
+            cmdline:"console=ttyS0 init=/sbin/lab-init rw root=host9p rootfstype=9p rootflags=trans=virtio,cache=loose modules=virtio_pci tsc=reliable mitigations=off" };
+  var STATE_DB="badgerlab-state", STATE_KEY="v86-snapshot";
+
+  var bootlog=$("bootlog"), bootbar=$("bootbar"), statusEl=$("status"), dot=$("statusdot"), banner=$("work-banner");
+  var logLines=[], progress=0;
+  function blog(s){ logLines.push(s); bootlog.textContent=logLines.slice(-8).join("\n"); }
+  function setBar(p){ progress=Math.max(progress,p); bootbar.style.width=Math.min(100,progress)+"%"; }
+  function setStatus(s,cls){ statusEl.textContent=s; dot.className="dot"+(cls?(" "+cls):""); }
+
+  function bootFailed(msg){
+    setStatus("terminal unavailable","err");
+    banner.className="work-banner"; banner.innerHTML="The terminal didn’t start — <b>your work can continue</b> with the options below.";
+    $("overlay").classList.remove("hidden");
+    $("overlay").innerHTML=
+      '<div class="failcard"><h3>The in-browser terminal didn’t start</h3>'+
+      '<p>'+esc(msg||"A boot asset couldn’t load. This is usually a network or CDN hiccup.")+'</p>'+
+      '<p class="muted">You can still do every challenge. Pick one:</p>'+
+      '<div class="row">'+
+      '<button class="btn btn-primary" id="fc-retry">↻ Try again</button>'+
+      '<a class="btn btn-ghost" href="terminal.html">Open terminal only</a>'+
+      '<button class="btn btn-ghost" id="fc-static">Work offline (download files)</button>'+
+      '</div></div>';
+    $("fc-retry").addEventListener("click",function(){ location.reload(); });
+    $("fc-static").addEventListener("click",enterStaticMode);
+  }
+  function enterStaticMode(){
+    document.body.classList.add("static-mode");
+    banner.className="work-banner"; banner.innerHTML="<b>Offline mode.</b> Download the files below and solve on your own machine — the briefings on the left tell you what to do.";
+    // Replace the terminal with a plain download list built from every challenge's files.
+    var host=document.querySelector(".term-wrap");
+    var items=""; CH.forEach(function(c){ (c.files||[]).forEach(function(f){
+      items+='<a class="mini" style="margin:4px" href="'+f.url+'" download="'+f.name+'">↓ '+f.name+'</a>'; }); });
+    host.innerHTML='<div style="position:absolute;inset:0;padding:22px;overflow:auto;color:var(--ink-dim);font-size:13.5px">'+
+      '<p style="margin-top:0"><b style="color:var(--ink)">Work offline.</b> Every challenge file, ready to download. '+
+      'Read each briefing on the left, then use tools on your own computer.</p><div>'+items+'</div>'+
+      '<p style="margin-top:18px">On a machine with the toolkit installed, the same commands from the toolbox apply.</p></div>';
+    $("toolbox").classList.remove("open");
+  }
+
+  // xterm
+  var term, fit, emulator;
+  function initTerminal(){
+    if(typeof Terminal==="undefined" || typeof V86==="undefined"){
+      bootFailed("The terminal engine couldn’t load from the CDN. Check your connection, then try again."); return;
+    }
+    term=new Terminal({ convertEol:false, cursorBlink:true, fontFamily:"var(--mono)", fontSize:14,
+      theme:{ background:"#000000", foreground:"#d7e2d5", cursor:"#5ef2a0", green:"#5ef2a0", brightGreen:"#7dffb8", yellow:"#f2c14e" },
+      scrollback:5000 });
+    fit=new FitAddon.FitAddon(); term.loadAddon(fit); term.open($("terminal"));
+    try{ fit.fit(); }catch(e){}
+    startEmulator();
+  }
+
+  function startEmulator(){
+    // Preflight: confirm the lab image is actually published here before booting.
+    // If it isn't (fresh deploy, wrong host), fail fast into the fallback instead of
+    // hanging on the boot overlay until the safety timeout.
+    fetch(IMG.basefs,{method:"HEAD"}).then(function(r){
+      if(!r.ok) throw new Error("fs.json "+r.status);
+      bootEmulator();
+    }).catch(function(){
+      bootFailed("The lab image isn’t reachable on this host yet. If this is a fresh deploy, it may still be publishing — try again shortly.");
+    });
+  }
+
+  function bootEmulator(){
+    banner.className="work-banner ok";
+    banner.innerHTML="<b>Lab image</b> — a real 32-bit Linux box with the full toolkit. Your files are in <code>~/challenges</code>.";
+    var cfg={ wasm_path:CDN.wasm, memory_size:256*1024*1024, vga_memory_size:4*1024*1024,
+      bios:{url:CDN.seabios}, vga_bios:{url:CDN.vgabios}, cmdline:IMG.cmdline, autostart:true,
+      disable_keyboard:true, disable_speaker:true,
+      filesystem:{ baseurl:IMG.baseurl, basefs:IMG.basefs }, bzimage_initrd_from_filesystem:true };
+    blog("engine: v86 (wasm)  ·  image: badger lab (32-bit Debian + toolkit)");
+    blog("fetching bios + kernel…"); setBar(8); setStatus("booting…");
+    try{ emulator=new V86(cfg); }catch(err){ bootFailed("Boot failed: "+err); return; }
+    window._emulator=emulator;
+
+    emulator.add_listener("download-progress",function(e){ if(e&&e.total){ setBar(8+Math.round((e.loaded/e.total)*46)); } });
+    emulator.add_listener("download-error",function(e){
+      bootFailed("A boot asset failed to download"+(e&&e.file_name?(" ("+e.file_name+")"):"")+". The lab image may not be published on this host yet.");
+    });
+
+    var sawOutput=false, bootDone=false;
+    function finishBoot(){ if(bootDone)return; bootDone=true; setBar(100); $("overlay").classList.add("hidden");
+      setStatus("running","ok"); term.focus(); try{ fit.fit(); sendResize(); }catch(e){} }
+    emulator.add_listener("serial0-output-byte",function(byte){
+      var ch=String.fromCharCode(byte);
+      if(!sawOutput){ sawOutput=true; setBar(60); setStatus("kernel up — starting shell…"); }
+      term.write(ch);
+      if(!bootDone && (ch==="$"||ch==="#"||ch==="%")){ setTimeout(finishBoot,350); }
+    });
+    setTimeout(function(){ if(sawOutput) finishBoot(); }, 12000);
+    // Lab image (Debian) boots slower than a busybox base — give it room, then fall back honestly.
+    setTimeout(function(){ if(!sawOutput){ bootFailed("The lab image didn’t respond in time. If this is a fresh deploy, the image may still be publishing."); } else { finishBoot(); } }, 75000);
+
+    term.onData(function(d){ emulator.serial0_send(d); });
+    function sendResize(){ if(bootDone) emulator.serial0_send("stty cols "+term.cols+" rows "+term.rows+" 2>/dev/null\n"); }
+    addEventListener("resize",function(){ try{ fit.fit(); }catch(e){} });
+
+    // snapshot to IndexedDB
+    emulator.add_listener("emulator-ready",function(){
+      idbGet(STATE_KEY).then(function(saved){ if(saved&&saved.byteLength){
+        blog("restoring saved snapshot ("+(saved.byteLength/1048576).toFixed(1)+" MB)…");
+        emulator.restore_state(saved.buffer).then(function(){ setStatus("restored snapshot","ok"); })
+          .catch(function(e){ blog("restore failed, clean boot: "+e); }); } }).catch(function(){});
+    });
+  }
+
+  function runInTerminal(cmd){
+    if(!emulator || !window._emulator){ return; }
+    try{ term.focus(); emulator.serial0_send(cmd+"\n"); }catch(e){}
+  }
+
+  // IndexedDB helpers
+  function idb(){ return new Promise(function(res,rej){ var r=indexedDB.open(STATE_DB,1);
+    r.onupgradeneeded=function(){ r.result.createObjectStore("s"); };
+    r.onsuccess=function(){ res(r.result); }; r.onerror=function(){ rej(r.error); }; }); }
+  function idbPut(k,v){ return idb().then(function(db){ return new Promise(function(res,rej){
+    var tx=db.transaction("s","readwrite"); tx.objectStore("s").put(v,k); tx.oncomplete=function(){res();}; tx.onerror=function(){rej(tx.error);}; }); }); }
+  function idbGet(k){ return idb().then(function(db){ return new Promise(function(res,rej){
+    var tx=db.transaction("s","readonly"); var g=tx.objectStore("s").get(k); g.onsuccess=function(){res(g.result);}; g.onerror=function(){rej(g.error);}; }); }); }
+  function idbDel(k){ return idb().then(function(db){ return new Promise(function(res,rej){
+    var tx=db.transaction("s","readwrite"); tx.objectStore("s").delete(k); tx.oncomplete=function(){res();}; tx.onerror=function(){rej(tx.error);}; }); }); }
+
+  $("btn-save").addEventListener("click",function(){
+    if(!emulator){ return; } setStatus("saving snapshot…");
+    emulator.save_state().then(function(state){ return idbPut(STATE_KEY,new Uint8Array(state)); })
+      .then(function(){ setStatus("snapshot saved","ok"); banner.className="work-banner ok";
+        banner.innerHTML="Snapshot saved to this browser — it restores on your next visit. <b>Reset</b> discards it."; })
+      .catch(function(e){ setStatus("save failed","err"); blog("save error: "+e); });
+  });
+  $("btn-reset").addEventListener("click",function(){
+    if(!confirm("Reset the lab? This discards your saved snapshot and all changes, then reboots a clean box.")) return;
+    idbDel(STATE_KEY).then(function(){ location.reload(); }).catch(function(){ location.reload(); });
+  });
+
+  // Esc closes the help menu / dialogs handled natively; keyboard nicety for menu
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeHelp(); });
+
+  // =========================================================================
+  //  boot the page
+  // =========================================================================
+  buildTabs();
+  // deep-link to a challenge by slug (#04-stegosaurus-3)
+  var start=0, hash=(location.hash||"").replace(/^#/,"");
+  if(hash){ CH.forEach(function(c,i){ if(c.slug===hash) start=i; }); }
+  select(start);
+  try{ if(localStorage.getItem(TOOLBOX_KEY)==="1") revealToolbox(false); }catch(e){}
+  initTerminal();
+})();
+</script>
+</body>
+</html>
