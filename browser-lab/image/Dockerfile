@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # ============================================================================
 #  Chiral Lab - bootable v86 image (32-bit Debian userland + full toolkit)
 # ============================================================================
@@ -42,12 +41,16 @@ RUN apt-get install -y python3-pip \
 # domains, plus the most-common Kali CLI tools. Each group tolerates an i386 gap
 # (|| true) so one missing package can't fail the whole emulated build. Recommends
 # are off globally (99lean), keeping the size down. Heavy GUI/GPU tools are out.
-RUN apt-get install -y foremost scalpel bulk-extractor pngcheck exiv2 poppler-utils sqlite3 ent binutils hexedit tree || true
-RUN apt-get install -y imagemagick || true
-RUN apt-get install -y outguess fcrackzip pdfcrack gnupg || true
-RUN apt-get install -y john hydra || true
-RUN apt-get install -y radare2 ltrace strace || true
-RUN apt-get install -y nmap netcat-openbsd tcpdump curl wget whois dnsutils git jq || true
+# Install one package at a time: on emulated i386 a single missing candidate
+# makes `apt-get install a b c` abort and take the whole line down with it, so
+# grouping loses every tool behind the first gap. (bulk-extractor and radare2
+# have no i386 build in bookworm — omitted.)
+RUN for p in \
+      foremost scalpel pngcheck exiv2 poppler-utils sqlite3 ent binutils hexedit tree \
+      imagemagick outguess fcrackzip pdfcrack gnupg john hydra ltrace strace \
+      nmap netcat-openbsd tcpdump curl wget whois dnsutils git jq; do \
+      apt-get install -y "$p" || echo "SKIP $p (no i386 candidate)"; \
+    done
 RUN pip install --break-system-packages --no-cache-dir hashid || true
 
 # --- Kernel + init + 9p boot plumbing --------------------------------------
@@ -75,28 +78,9 @@ RUN chmod +x /sbin/lab-init && passwd -d root 2>/dev/null || true
 # ~/challenges. The `ctf` helper (below) copies a challenge's files in on demand
 # — the workbench "Download" button and terminal-only users both call it.
 COPY payload/opt/ /opt/
+COPY overlay/etc/ctf-func.sh /etc/ctf-func.sh
 RUN mkdir -p /root/challenges && chmod -R a-w /opt/ctf 2>/dev/null || true
-RUN cat >> /root/.bashrc <<'BASHRC'
-
-# ctf <1|2|4|slug> — pull a challenge's files onto the box and cd into them.
-ctf() {
-  local sel="${1:-}" slug
-  case "$sel" in
-    1|01|01-photo-day)     slug=01-photo-day ;;
-    2|02|02-stegosaurus-1) slug=02-stegosaurus-1 ;;
-    4|04|04-stegosaurus-3) slug=04-stegosaurus-3 ;;
-    *) slug="$sel" ;;
-  esac
-  if [ -z "$slug" ] || [ ! -d "/opt/ctf/$slug" ]; then
-    echo "usage: ctf <1|2|4>   (loads that challenge's files into ~/challenges/<slug>)"
-    echo "available:"; ls -1 /opt/ctf 2>/dev/null; return 1
-  fi
-  mkdir -p ~/challenges/"$slug"
-  cp /opt/ctf/"$slug"/* ~/challenges/"$slug"/ 2>/dev/null
-  cd ~/challenges/"$slug" && ls -la
-}
-cd ~/challenges 2>/dev/null
-BASHRC
+RUN printf '\nsource /etc/ctf-func.sh 2>/dev/null\ncd ~/challenges 2>/dev/null\n' >> /root/.bashrc
 
 # A friendly MOTD (ASCII only — the serial console is not UTF-8).
 RUN printf '%s\n' \
