@@ -198,7 +198,35 @@
   .app:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
   .app-ico{color:var(--accent);font-size:12px}
   .app-nm{font-family:var(--mono);font-size:12.5px}
+  .app.app-off{opacity:.45}
+  .app.app-off:hover{opacity:.7;border-color:var(--line)}
   #app-usage{white-space:pre-wrap;word-break:break-word}
+  #app-note{color:var(--accent-2)}
+
+  /* ---- download-to-box button ---- */
+  .btn-dl{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;background:var(--accent);color:var(--carbon,#17161a);border:1px solid var(--accent);
+    padding:11px 16px;margin-top:14px;cursor:pointer;width:100%;justify-content:center}
+  .btn-dl:hover{opacity:.9}
+  .btn-dl.done{background:transparent;color:var(--accent);cursor:default}
+  .dl-note{font-size:12px;color:var(--ink-dim);margin:8px 0 0;line-height:1.5}
+
+  /* ---- mail-client view for .eml ---- */
+  .mailview{padding:18px 20px}
+  .mail-subj{font-family:var(--display);font-weight:600;font-size:19px;color:var(--ink);margin-bottom:10px}
+  .mail-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-dim);padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .mail-meta b{color:var(--accent-2);font-weight:600;letter-spacing:.02em}
+  .mail-atts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .mail-att{font-family:var(--mono);font-size:12px;border:1px solid var(--line);padding:6px 10px;color:var(--ink)}
+  .mail-body{font-size:14.5px;line-height:1.7;color:var(--ink);margin-top:14px;white-space:normal}
+  .mail-foot{font-size:12px;color:var(--ink-dim);margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
+
+  /* ---- toast ---- */
+  .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,16px);z-index:120;max-width:min(560px,92vw);
+    background:var(--panel);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--ink);
+    font-size:13.5px;line-height:1.5;padding:12px 16px;opacity:0;transition:opacity .25s,transform .25s;box-shadow:var(--shadow)}
+  .toast.warn{border-color:color-mix(in srgb,var(--danger) 55%,var(--line))}
+  .toast.in{opacity:1;transform:translate(-50%,0)}
 
   /* ---- modal ---- */
   dialog{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--panel-2));color:var(--ink);
@@ -296,7 +324,8 @@
     <p class="eyebrow" id="app-cat">Application</p>
     <h3 id="app-name">tool</h3>
     <p id="app-desc"></p>
-    <p class="muted" style="margin-bottom:6px">How to run</p>
+    <p class="muted" id="app-note" style="display:none">Not installed on this box — listed for reference.</p>
+    <p class="muted" id="app-howto" style="margin-bottom:6px">How to run</p>
     <pre id="app-usage"></pre>
     <div class="row">
       <button class="btn btn-ghost" data-close>Close</button>
@@ -351,8 +380,8 @@ file *              # ask what each file really is</pre>
     " \\____|_| |_|___|_| \\_\\ /_/   \\_\\_____|",
     "           32-bit forensics workbench",
     "",
-    "Chiral Lab - your challenge files are in ~/challenges.",
-    "Read a briefing to begin:  cat BRIEF-01-photo-day.md"
+    "Chiral Lab - the box is empty to start.",
+    "Read a challenge, then use its Download button to pull its files onto the box."
   ];
 
   // =========================================================================
@@ -368,11 +397,13 @@ file *              # ask what each file really is</pre>
       eyebrow:"Challenge 01 · Intercept", base:100,
       brief:"challenges/01-photo-day/BRIEF.md",
       files:[ {name:"email.eml", kind:"eml", url:"challenges/01-photo-day/email.eml", sub:"the intercepted message"} ],
+      boxFiles:["email.eml"],
       hints:[] },
     { id:"02", slug:"02-stegosaurus-1", title:"Stegosaurus 1",
       eyebrow:"Challenge 02 · Steganography", base:200,
       brief:"challenges/02-stegosaurus-1/BRIEF.md",
       files:[ {name:"stego_badger.jpeg", kind:"image", url:"challenges/02-stegosaurus-1/stego_badger.jpeg", sub:"the carrier image"} ],
+      boxFiles:["stego_badger.jpeg","wordlist.txt"],
       hints:[
         { cost:25, body:"WE WILL, WE WILL…" },
         { cost:50, body:"Try common password lists / stego tools." }
@@ -389,36 +420,126 @@ file *              # ask what each file really is</pre>
       eyebrow:"Challenge 04 · Steganography", base:500,
       brief:"challenges/04-stegosaurus-3/BRIEF.md",
       files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/04-stegosaurus-3/Honey.jpeg", sub:"one file, many layers"} ],
+      boxFiles:["Honey.jpeg","wordlist.txt"],
       hints:[] }
   ];
 
   // =========================================================================
-  //  KALI APPLICATIONS — the tools that actually ship in this image, arranged
-  //  in Kali's menu-folder style so a newcomer can browse what's available.
-  //  Clicking an app opens its detail card (what it does + how to run) with a
-  //  "Run in terminal" button. Not gated — this is reference, not a hint.
+  //  KALI APPLICATIONS — the real Kali menu structure, so a newcomer can browse
+  //  what a Kali box offers. `on:true` = actually installed on THIS image
+  //  (runnable, with a Run button); the rest are reference-only info cards so the
+  //  handful you'll actually use don't stand out. Not gated — never a hint.
   // =========================================================================
   var KALI = [
-    { cat:"Forensics", items:[
-      { name:"exiftool", desc:"Read and edit a file's metadata — camera info, comments, and hidden EXIF/JPEG tags.", usage:"exiftool <file>", run:"exiftool stego_badger.jpeg" },
-      { name:"binwalk",  desc:"Scan a file for other files hidden or appended inside it, then carve them back out.", usage:"binwalk <file>   ·   binwalk --dd='.*' <file>", run:"binwalk Honey.jpeg" }
+    { cat:"01 · Information Gathering", items:[
+      { name:"nmap", on:true, desc:"Scan hosts and ports; fingerprint services.", usage:"nmap <target>", run:"nmap -sV localhost" },
+      { name:"whois", on:true, desc:"Look up domain/IP registration records.", usage:"whois <domain>" },
+      { name:"dig", on:true, desc:"Query DNS records (dnsutils).", usage:"dig <domain> ANY" },
+      { name:"netdiscover", desc:"Active/passive ARP reconnaissance on a subnet." },
+      { name:"dnsenum", desc:"Enumerate DNS info and subdomains for a domain." },
+      { name:"theharvester", desc:"Gather emails, hosts, and names from public sources." },
+      { name:"recon-ng", desc:"Full-featured web reconnaissance framework." }
     ]},
-    { cat:"Password Attacks", items:[
-      { name:"stegcracker", desc:"Brute-force a steghide passphrase against a wordlist.", usage:"stegcracker <file> <wordlist>", run:"stegcracker stego_badger.jpeg wordlist.txt" }
+    { cat:"02 · Vulnerability Analysis", items:[
+      { name:"nikto", desc:"Scan a web server for known vulnerabilities and misconfigurations." },
+      { name:"lynis", desc:"Audit a Unix system's security posture." },
+      { name:"sqlmap", desc:"Detect and exploit SQL-injection flaws (also Web/DB)." }
     ]},
-    { cat:"Steganography", items:[
-      { name:"steghide", desc:"Hide a file inside a JPEG behind a passphrase — or extract one back out.", usage:"steghide extract -sf <file>", run:"steghide extract -sf stego_badger.jpeg" },
-      { name:"stegcracker", desc:"Crack a steghide passphrase with a wordlist (see Password Attacks).", usage:"stegcracker <file> <wordlist>", run:"stegcracker stego_badger.jpeg wordlist.txt" }
+    { cat:"03 · Web Application Analysis", items:[
+      { name:"sqlmap", desc:"Automated SQL-injection detection and exploitation." },
+      { name:"gobuster", desc:"Brute-force URIs, DNS subdomains, and vhosts." },
+      { name:"dirb", desc:"Content-discovery scanner for hidden web paths." },
+      { name:"ffuf", desc:"Fast web fuzzer for paths and parameters." },
+      { name:"whatweb", desc:"Identify the technologies a website runs." },
+      { name:"burpsuite", desc:"Intercepting proxy and web-app testing suite (GUI)." }
     ]},
-    { cat:"Accessories", items:[
-      { name:"openssl", desc:"Encrypt/decrypt data. Here: decrypt an AES-encrypted blob once you have the key/password.", usage:"openssl enc -d -aes-256-cbc -pbkdf2 -in <file> -out out.bin", run:"" },
-      { name:"file",    desc:"Ask what a file really is, past its extension.", usage:"file <file>", run:"file *" },
-      { name:"xxd",     desc:"Dump the raw bytes of a file as hex + ASCII.", usage:"xxd <file> | less", run:"xxd Honey.jpeg | less" },
-      { name:"dd",      desc:"Copy/carve raw bytes — pull an embedded file out at a known offset.", usage:"dd if=<file> of=out.bin bs=1 skip=<offset>", run:"" },
-      { name:"zip / unzip", desc:"List and extract archives you carve out.", usage:"unzip -l <file>.zip   ·   unzip <file>.zip", run:"" },
-      { name:"python3", desc:"Run a helper script (e.g. one you recover mid-challenge).", usage:"python3 <script>.py", run:"" },
-      { name:"less",    desc:"Scroll through a big file one screen at a time (press q to quit).", usage:"less <file>", run:"" },
-      { name:"nano / vim", desc:"Edit a text file in the terminal.", usage:"nano <file>   ·   vim <file>", run:"" }
+    { cat:"04 · Database Assessment", items:[
+      { name:"sqlite3", on:true, desc:"Open and query SQLite databases you recover.", usage:"sqlite3 <file.db> '.tables'" },
+      { name:"sqlmap", desc:"SQL-injection tool with DB dumping." },
+      { name:"mdb-tools", desc:"Read Microsoft Access .mdb databases." }
+    ]},
+    { cat:"05 · Password Attacks", items:[
+      { name:"john", on:true, desc:"John the Ripper — crack password hashes.", usage:"john --wordlist=<list> <hashfile>" },
+      { name:"hydra", on:true, desc:"Online brute-force login cracker for many protocols.", usage:"hydra -l <user> -P <list> <target> <service>" },
+      { name:"fcrackzip", on:true, desc:"Brute-force / dictionary-crack a password-protected ZIP.", usage:"fcrackzip -u -D -p <wordlist> <file.zip>" },
+      { name:"pdfcrack", on:true, desc:"Recover the password of an encrypted PDF.", usage:"pdfcrack -w <wordlist> <file.pdf>" },
+      { name:"hashid", on:true, desc:"Identify the type of a hash.", usage:"hashid <hash>" },
+      { name:"stegcracker", on:true, desc:"Brute-force a steghide passphrase against a wordlist.", usage:"stegcracker <file> <wordlist>", run:"" },
+      { name:"hashcat", desc:"GPU-accelerated hash cracker (needs a GPU)." },
+      { name:"crunch", desc:"Generate custom wordlists by pattern." },
+      { name:"cewl", desc:"Build a wordlist by spidering a website." },
+      { name:"medusa", desc:"Parallel network login brute-forcer." }
+    ]},
+    { cat:"06 · Wireless Attacks", items:[
+      { name:"aircrack-ng", desc:"Wi-Fi WEP/WPA key cracking suite." },
+      { name:"reaver", desc:"Brute-force WPS PINs to recover WPA keys." },
+      { name:"wifite", desc:"Automated wireless auditing wrapper." },
+      { name:"kismet", desc:"Wireless network detector and sniffer." }
+    ]},
+    { cat:"07 · Reverse Engineering", items:[
+      { name:"radare2", on:true, desc:"Reverse-engineering framework: disassemble, debug, patch.", usage:"r2 <binary>" },
+      { name:"objdump", on:true, desc:"Disassemble and inspect object files (binutils).", usage:"objdump -d <binary>" },
+      { name:"readelf", on:true, desc:"Show the structure of an ELF binary (binutils).", usage:"readelf -a <binary>" },
+      { name:"strings", on:true, desc:"Print the printable strings inside a binary (binutils).", usage:"strings <file>" },
+      { name:"ltrace", on:true, desc:"Trace a program's library calls.", usage:"ltrace <binary>" },
+      { name:"strace", on:true, desc:"Trace a program's system calls.", usage:"strace <binary>" },
+      { name:"gdb", desc:"The GNU debugger." },
+      { name:"ghidra", desc:"NSA reverse-engineering suite (GUI)." }
+    ]},
+    { cat:"08 · Exploitation Tools", items:[
+      { name:"metasploit-framework", desc:"The exploitation and payload framework (msfconsole)." },
+      { name:"searchsploit", desc:"Search the Exploit-DB archive from the command line." },
+      { name:"msfvenom", desc:"Generate and encode payloads." }
+    ]},
+    { cat:"09 · Sniffing & Spoofing", items:[
+      { name:"tcpdump", on:true, desc:"Capture and inspect network packets on the wire.", usage:"tcpdump -r <file.pcap>" },
+      { name:"nc", on:true, desc:"Netcat — read/write raw TCP/UDP; move data and files.", usage:"nc <host> <port>" },
+      { name:"wireshark", desc:"Graphical packet capture and analysis (GUI)." },
+      { name:"ettercap", desc:"Man-in-the-middle attacks on a LAN." },
+      { name:"responder", desc:"Poison LLMNR/NBT-NS to capture credentials." }
+    ]},
+    { cat:"10 · Post Exploitation", items:[
+      { name:"mimikatz", desc:"Extract Windows credentials from memory." },
+      { name:"weevely", desc:"Stealth PHP web shell." },
+      { name:"powersploit", desc:"PowerShell post-exploitation modules." }
+    ]},
+    { cat:"11 · Forensics", items:[
+      { name:"binwalk", on:true, desc:"Scan a file for embedded files and carve them out.", usage:"binwalk <file>   ·   binwalk --dd='.*' <file>", run:"binwalk Honey.jpeg" },
+      { name:"foremost", on:true, desc:"Carve files out of a blob by their signatures.", usage:"foremost -i <file> -o out/" },
+      { name:"scalpel", on:true, desc:"Fast file carver driven by a header/footer config.", usage:"scalpel <file> -o out/" },
+      { name:"bulk_extractor", on:true, desc:"Scan a file/image for emails, URLs, keys, and more.", usage:"bulk_extractor -o out/ <file>" },
+      { name:"exiftool", on:true, desc:"Read/edit metadata — EXIF, comments, hidden tags.", usage:"exiftool <file>", run:"" },
+      { name:"exiv2", on:true, desc:"Another metadata reader/editor for images.", usage:"exiv2 -pa <file>" },
+      { name:"steghide", on:true, desc:"Hide a file in a JPEG behind a passphrase — or extract it.", usage:"steghide extract -sf <file>", run:"" },
+      { name:"outguess", on:true, desc:"Extract data hidden with the outguess stego tool.", usage:"outguess -r <file> out.txt" },
+      { name:"pngcheck", on:true, desc:"Validate and inspect the chunk structure of a PNG.", usage:"pngcheck -v <file.png>" },
+      { name:"ent", on:true, desc:"Measure a file's entropy — spot encrypted/compressed blobs.", usage:"ent <file>" },
+      { name:"imagemagick", on:true, desc:"Inspect/convert images (identify, convert, mogrify).", usage:"identify -verbose <file>" },
+      { name:"pdfimages", on:true, desc:"Extract embedded images from a PDF (poppler-utils).", usage:"pdfimages -all <file.pdf> out" },
+      { name:"hexedit", on:true, desc:"Edit a file's raw bytes interactively.", usage:"hexedit <file>" },
+      { name:"volatility", desc:"Memory-forensics framework for RAM dumps." },
+      { name:"testdisk", desc:"Recover lost partitions and undelete files." },
+      { name:"autopsy", desc:"Digital-forensics browser front-end (GUI)." }
+    ]},
+    { cat:"12 · Reporting Tools", items:[
+      { name:"cutycapt", desc:"Capture a web page to an image." },
+      { name:"pipal", desc:"Analyze cracked-password statistics." }
+    ]},
+    { cat:"Usual Applications · Accessories", items:[
+      { name:"bash", on:true, desc:"The shell you're typing into.", usage:"" },
+      { name:"openssl", on:true, desc:"Encrypt/decrypt and hash. Here: decrypt an AES blob once you have the key.", usage:"openssl enc -d -aes-256-cbc -pbkdf2 -in <file> -out out.bin", run:"" },
+      { name:"gpg", on:true, desc:"Encrypt/decrypt/sign with GnuPG.", usage:"gpg -d <file.gpg>" },
+      { name:"file", on:true, desc:"Ask what a file really is, past its extension.", usage:"file <file>", run:"file *" },
+      { name:"xxd", on:true, desc:"Dump raw bytes as hex + ASCII.", usage:"xxd <file> | less", run:"" },
+      { name:"dd", on:true, desc:"Copy/carve raw bytes at a known offset.", usage:"dd if=<file> of=out.bin bs=1 skip=<offset>", run:"" },
+      { name:"zip / unzip", on:true, desc:"List and extract archives you carve out.", usage:"unzip -l <file>.zip   ·   unzip <file>.zip", run:"" },
+      { name:"python3", on:true, desc:"Run a helper script (e.g. one you recover mid-challenge).", usage:"python3 <script>.py", run:"" },
+      { name:"git", on:true, desc:"Inspect a recovered git repository.", usage:"git log   ·   git show" },
+      { name:"jq", on:true, desc:"Slice and filter JSON on the command line.", usage:"jq . <file.json>" },
+      { name:"curl / wget", on:true, desc:"Fetch data over HTTP(S).", usage:"curl <url>   ·   wget <url>" },
+      { name:"tree", on:true, desc:"Show a directory as a tree.", usage:"tree" },
+      { name:"less", on:true, desc:"Scroll a big file (press q to quit).", usage:"less <file>", run:"" },
+      { name:"nano / vim", on:true, desc:"Edit a text file in the terminal.", usage:"nano <file>   ·   vim <file>", run:"" }
     ]}
   ];
 
@@ -504,7 +625,7 @@ file *              # ask what each file really is</pre>
       return;
     }
     if(!c.files || !c.files.length){ e.innerHTML=""; return; }
-    var html='<h4>Evidence · these files are on the box, in <code>~/challenges</code></h4>';
+    var html='<h4>Evidence</h4>';
     c.files.forEach(function(f){
       var isImg = f.kind==="image";
       var thumb = isImg
@@ -515,13 +636,35 @@ file *              # ask what each file really is</pre>
         '<div class="fmeta"><div class="fname">'+f.name+'</div><div class="fsub">'+(f.sub||"")+'</div></div>'+
         '<div class="fact">'+
           '<button class="mini" data-view="'+f.url+'" data-kind="'+f.kind+'" data-name="'+f.name+'">🔍 View</button>'+
-          '<a class="mini" href="'+f.url+'" download="'+f.name+'">↓ Download</a>'+
         '</div></div>';
     });
+    if(c.boxFiles && c.boxFiles.length){
+      var n=c.boxFiles.length;
+      html += '<button class="btn-dl" id="btn-dl">⤓ Download '+(n>1?"all ":"")+"to the box →</button>"+
+              '<p class="dl-note">Pulls '+n+' file'+(n>1?'s':'')+' onto the terminal and drops you into <code>~/challenges/'+c.slug+'</code>. Like the real thing — you fetch the artifact, then work on it.</p>';
+    }
     e.innerHTML=html;
     Array.prototype.forEach.call(e.querySelectorAll("[data-view]"),function(btn){
-      btn.addEventListener("click",function(){ openViewer(btn.dataset.name, btn.dataset.url, btn.dataset.kind); });
+      btn.addEventListener("click",function(){ openViewer(btn.dataset.name, btn.dataset.view, btn.dataset.kind); });
     });
+    var dl=$("btn-dl"); if(dl) dl.addEventListener("click",function(){ downloadChallenge(c); });
+  }
+
+  // Copy a challenge's staged files onto the box, then cd into them — the moment
+  // that "reveals" the challenge in the terminal.
+  function downloadChallenge(c){
+    if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
+    var slug=c.slug, n=(c.boxFiles||[]).length;
+    runInTerminal("mkdir -p ~/challenges/"+slug+" && cp /opt/ctf/"+slug+"/* ~/challenges/"+slug+"/ 2>/dev/null && cd ~/challenges/"+slug+" && ls -la");
+    toast("Downloaded "+n+" file"+(n>1?"s":"")+" to ~/challenges/"+slug+" — you’re in that folder now.");
+    var b=$("btn-dl"); if(b){ b.textContent="✓ Downloaded — files are on the box"; b.disabled=true; b.classList.add("done"); }
+  }
+
+  function toast(msg, warn){
+    var t=document.createElement("div"); t.className="toast"+(warn?" warn":""); t.textContent=msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.classList.add("in"); });
+    setTimeout(function(){ t.classList.remove("in"); setTimeout(function(){ t.remove(); }, 300); }, 4200);
   }
 
   function select(idx){
@@ -551,13 +694,51 @@ file *              # ask what each file really is</pre>
     $("viewer-title").textContent=name;
     var dl=$("viewer-dl"); dl.href=url; dl.setAttribute("download",name); dl.style.display="";
     var body=$("viewer-body");
-    if(kind==="image"){ body.innerHTML='<img class="full" src="'+url+'" alt="'+name+'">'; showDlg(dlgViewer); }
-    else{
-      body.innerHTML='<pre class="raw">loading…</pre>';
-      fetch(url).then(function(r){return r.text();}).then(function(t){ body.querySelector("pre").textContent=t; })
-        .catch(function(){ body.querySelector("pre").textContent="Couldn't load this file. Use Download instead."; });
-      showDlg(dlgViewer);
+    if(kind==="image"){ body.innerHTML='<img class="full" src="'+url+'" alt="'+name+'">'; showDlg(dlgViewer); return; }
+    if(kind==="eml"){
+      body.innerHTML='<div class="mailview">loading…</div>';
+      fetch(url).then(function(r){ if(!r.ok) throw 0; return r.text(); })
+        .then(function(t){ body.innerHTML=renderEmail(t); })
+        .catch(function(){ body.innerHTML='<div class="mailview"><div class="mail-body">Couldn’t load this message. Use Download instead.</div></div>'; });
+      showDlg(dlgViewer); return;
     }
+    body.innerHTML='<pre class="raw">loading…</pre>';
+    fetch(url).then(function(r){return r.text();}).then(function(t){ body.querySelector("pre").textContent=t; })
+      .catch(function(){ body.querySelector("pre").textContent="Couldn't load this file."; });
+    showDlg(dlgViewer);
+  }
+
+  // Render a .eml the way a mail client would: sender/subject/body + attachment
+  // chips — never the raw headers, base64, or EXIF. Recovering the hidden data
+  // is the terminal's job. Parses top-level headers + a multipart body.
+  function renderEmail(raw){
+    raw = raw.replace(/\r\n/g,"\n");
+    var he = raw.indexOf("\n\n");
+    var head = he>=0 ? raw.slice(0,he) : raw;
+    var rest = he>=0 ? raw.slice(he+2) : "";
+    function hdr(name){ var m=head.match(new RegExp("^"+name+":\\s*(.*)$","im")); return m?m[1].trim():""; }
+    var from=hdr("From"), to=hdr("To"), subject=hdr("Subject"), date=hdr("Date"), ctype=hdr("Content-Type");
+    var bodyText="", atts=[];
+    var bm = ctype.match(/boundary="?([^";]+)"?/i);
+    if(bm){
+      rest.split("--"+bm[1]).forEach(function(p){
+        p=p.replace(/^\n+/,""); if(!p || p.indexOf("--")===0) return;
+        var pe=p.indexOf("\n\n"); if(pe<0) return;
+        var ph=p.slice(0,pe), pb=p.slice(pe+2);
+        var pct=((ph.match(/Content-Type:\s*([^;\n]+)/i)||[])[1]||"").trim().toLowerCase();
+        var fn=(ph.match(/name="?([^";\n]+)"?/i)||[])[1]||"";
+        if(pct.indexOf("text/plain")===0 && !fn){ bodyText += pb.replace(/\n?--\s*$/,""); }
+        else if(fn){ atts.push(fn); }
+      });
+    } else { bodyText = rest; }
+    function ex(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    var h='<div class="mailview">'+
+      '<div class="mail-subj">'+ex(subject||"(no subject)")+'</div>'+
+      '<div class="mail-meta"><span><b>From</b> '+ex(from)+'</span><span><b>To</b> '+ex(to)+'</span>'+(date?'<span><b>Date</b> '+ex(date)+'</span>':'')+'</div>';
+    if(atts.length){ h+='<div class="mail-atts">'+atts.map(function(a){ return '<span class="mail-att">📎 '+ex(a)+'</span>'; }).join("")+'</div>'; }
+    h+='<div class="mail-body">'+ex(bodyText.trim()).replace(/\n/g,"<br>")+'</div>'+
+       '<div class="mail-foot">Attachments appear as they would in a mail app. To inspect one, download the challenge to the box and use the terminal tools.</div></div>';
+    return h;
   }
   function openWarehouse(){
     $("viewer-title").textContent="The Memory Warehouse";
@@ -591,7 +772,7 @@ file *              # ask what each file really is</pre>
       sec.innerHTML='<div class="apps-cat-h">'+esc(g.cat)+'</div>';
       var grid=document.createElement("div"); grid.className="apps-grid";
       g.items.forEach(function(it){
-        var btn=document.createElement("button"); btn.className="app";
+        var btn=document.createElement("button"); btn.className="app"+(it.on?"":" app-off");
         btn.innerHTML='<span class="app-ico">▸</span><span class="app-nm">'+esc(it.name)+'</span>';
         btn.addEventListener("click",function(){ openApp(g.cat,it); });
         grid.appendChild(btn);
@@ -606,10 +787,18 @@ file *              # ask what each file really is</pre>
     $("app-cat").textContent=cat;
     $("app-name").textContent=it.name;
     $("app-desc").textContent=it.desc;
-    $("app-usage").textContent=it.usage;
-    var runBtn=$("app-run");
-    if(it.run){ runBtn.style.display=""; runBtn.onclick=function(){ closeAllDialogs(); runInTerminal(it.run); }; }
-    else { runBtn.style.display="none"; }
+    var usageEl=$("app-usage"), howto=$("app-howto"), note=$("app-note"), runBtn=$("app-run");
+    if(it.on){
+      note.style.display="none";
+      var hasUsage = !!it.usage;
+      howto.style.display = hasUsage ? "" : "none";
+      usageEl.style.display = hasUsage ? "" : "none";
+      usageEl.textContent = it.usage||"";
+      if(it.run){ runBtn.style.display=""; runBtn.onclick=function(){ closeAllDialogs(); runInTerminal(it.run); }; }
+      else { runBtn.style.display="none"; }
+    } else {
+      note.style.display=""; howto.style.display="none"; usageEl.style.display="none"; runBtn.style.display="none";
+    }
     showDlg($("dlg-app"));
   }
 
