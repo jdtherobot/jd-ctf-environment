@@ -1,5 +1,5 @@
 # ============================================================================
-#  Badger Lab — bootable v86 image (32-bit Debian userland + full toolkit)
+#  Chiral Lab - bootable v86 image (32-bit Debian userland + full toolkit)
 # ============================================================================
 # This bakes the EXACT toolchain proven in ../feasibility/i386-toolchain-proof.md
 # (Debian i386, versions pinned by the apt snapshot) plus the sanitized player
@@ -10,7 +10,7 @@
 # build-image.sh assembles it. Never COPY anything from facilitator/ or the archive.
 #
 # Build (32-bit is mandatory):
-#   docker build --platform linux/386 -t badger-lab:i386 .
+#   docker build --platform linux/386 -t chiral-lab:i386 .
 # Then package to a 9p filesystem with ./build-image.sh (docker export -> fs2json).
 #
 # Base = bookworm (Debian 12), NOT stable/trixie: Debian 13 dropped the i386
@@ -61,13 +61,14 @@ RUN chmod +x /sbin/lab-init && passwd -d root 2>/dev/null || true
 COPY payload/ /root/challenges/
 RUN printf '\ncd ~/challenges 2>/dev/null\n' >> /root/.bashrc
 
-# A friendly MOTD.
+# A friendly MOTD (ASCII only — the serial console is not UTF-8).
 RUN printf '%s\n' \
-  '  ___          _                 _          _     ' \
-  ' | _ ) __ _ __| |__ _ ___ _ _   | |   __ _ | |__  ' \
-  ' | _ \/ _` / _` / _` / -_) `_|  | |__/ _` || / _ \ ' \
-  ' |___/\__,_\__,_\__, \___|_|    |____\__,_||_\___/ ' \
-  '                |___/  32-bit forensics workbench   ' \
+  '  ____ _   _ ___ ____      _    _      ' \
+  ' / ___| | | |_ _|  _ \    / \  | |     ' \
+  '| |   | |_| || || |_) |  / _ \ | |     ' \
+  '| |___|  _  || ||  _ <   / ___ \| |___  ' \
+  ' \____|_| |_|___|_| \_\ /_/   \_\_____| ' \
+  '           32-bit forensics workbench   ' \
   > /etc/motd
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/* 2>/dev/null || true
