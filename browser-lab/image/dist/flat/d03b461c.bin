@@ -1,0 +1,12 @@
+/.
+/usr
+/usr/bin
+/usr/bin/binwalk
+/usr/share
+/usr/share/doc
+/usr/share/doc/binwalk
+/usr/share/doc/binwalk/changelog.Debian.gz
+/usr/share/doc/binwalk/copyright
+/usr/share/man
+/usr/share/man/man1
+/usr/share/man/man1/binwalk.1.gz

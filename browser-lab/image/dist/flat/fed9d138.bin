@@ -1,0 +1,14 @@
+cbdbadc7feb2dbc60d1fde73ea3bf43e  usr/bin/steghide
+57deb17212483b49f89587180d4d67d4  usr/share/doc/steghide/BUGS
+72c7831222483f5c6d96ac2a8ca7ad48  usr/share/doc/steghide/CREDITS
+fe7cac39a1a1ef0975d24dfcf02f09b7  usr/share/doc/steghide/LEAME.gz
+85587b9213ca2301eb450aad574d5f87  usr/share/doc/steghide/README.gz
+a9e03fa8166b8fa918c81db1855b68d1  usr/share/doc/steghide/TODO
+8940e233565f2832ee074db092176de6  usr/share/doc/steghide/changelog.Debian.gz
+1a2e10366a3a55d7a4cb5fc3c87a6bf7  usr/share/doc/steghide/changelog.gz
+61f56aef8bc35030dc5362fa8a671769  usr/share/doc/steghide/copyright
+983e3b8d41d28dbbbc242f5fbfddbf5a  usr/share/locale/de/LC_MESSAGES/steghide.mo
+1859aaf870e86deb3fa113acfa50b52f  usr/share/locale/es/LC_MESSAGES/steghide.mo
+bde9bca5741c29316b826b0cd36da553  usr/share/locale/fr/LC_MESSAGES/steghide.mo
+605f604f605a7f915694e3f99c2f371a  usr/share/locale/ro/LC_MESSAGES/steghide.mo
+8096283f88040ba32a17df06758d7bd4  usr/share/man/man1/steghide.1.gz
