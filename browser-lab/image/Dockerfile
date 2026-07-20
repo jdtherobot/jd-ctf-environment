@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ============================================================================
 #  Chiral Lab - bootable v86 image (32-bit Debian userland + full toolkit)
 # ============================================================================
@@ -36,6 +37,19 @@ RUN apt-get install -y python3 binwalk
 RUN apt-get install -y python3-pip \
  && pip install --break-system-packages --no-cache-dir setuptools stegcracker || true
 
+# --- Expanded forensic/CTF toolkit ------------------------------------------
+# ~2x the core set: tools closest to our stego/forensics/crypto/carving/password
+# domains, plus the most-common Kali CLI tools. Each group tolerates an i386 gap
+# (|| true) so one missing package can't fail the whole emulated build. Recommends
+# are off globally (99lean), keeping the size down. Heavy GUI/GPU tools are out.
+RUN apt-get install -y foremost scalpel bulk-extractor pngcheck exiv2 poppler-utils sqlite3 ent binutils hexedit tree || true
+RUN apt-get install -y imagemagick || true
+RUN apt-get install -y outguess fcrackzip pdfcrack gnupg || true
+RUN apt-get install -y john hydra || true
+RUN apt-get install -y radare2 ltrace strace || true
+RUN apt-get install -y nmap netcat-openbsd tcpdump curl wget whois dnsutils git jq || true
+RUN pip install --break-system-packages --no-cache-dir hashid || true
+
 # --- Kernel + init + 9p boot plumbing --------------------------------------
 # linux-image-686-pae = the 32-bit kernel (bookworm dropped the non-PAE -686 flavour);
 # the 9p modules ship with it. We build an initramfs that loads virtio+9p and can
@@ -57,9 +71,32 @@ COPY overlay/sbin/lab-init /sbin/lab-init
 RUN chmod +x /sbin/lab-init && passwd -d root 2>/dev/null || true
 
 # --- Sanitized player files (assembled by build-image.sh into ./payload) -----
-# Baked at /root/challenges; the shell starts here (see lab-init + /root/.bashrc).
-COPY payload/ /root/challenges/
-RUN printf '\ncd ~/challenges 2>/dev/null\n' >> /root/.bashrc
+# Files stage read-only under /opt/ctf/<slug>/; the box starts with an EMPTY
+# ~/challenges. The `ctf` helper (below) copies a challenge's files in on demand
+# — the workbench "Download" button and terminal-only users both call it.
+COPY payload/opt/ /opt/
+RUN mkdir -p /root/challenges && chmod -R a-w /opt/ctf 2>/dev/null || true
+RUN cat >> /root/.bashrc <<'BASHRC'
+
+# ctf <1|2|4|slug> — pull a challenge's files onto the box and cd into them.
+ctf() {
+  local sel="${1:-}" slug
+  case "$sel" in
+    1|01|01-photo-day)     slug=01-photo-day ;;
+    2|02|02-stegosaurus-1) slug=02-stegosaurus-1 ;;
+    4|04|04-stegosaurus-3) slug=04-stegosaurus-3 ;;
+    *) slug="$sel" ;;
+  esac
+  if [ -z "$slug" ] || [ ! -d "/opt/ctf/$slug" ]; then
+    echo "usage: ctf <1|2|4>   (loads that challenge's files into ~/challenges/<slug>)"
+    echo "available:"; ls -1 /opt/ctf 2>/dev/null; return 1
+  fi
+  mkdir -p ~/challenges/"$slug"
+  cp /opt/ctf/"$slug"/* ~/challenges/"$slug"/ 2>/dev/null
+  cd ~/challenges/"$slug" && ls -la
+}
+cd ~/challenges 2>/dev/null
+BASHRC
 
 # A friendly MOTD (ASCII only — the serial console is not UTF-8).
 RUN printf '%s\n' \
