@@ -124,6 +124,20 @@
 <script>
 "use strict";
 (function(){
+  // Chiral banner painted after boot (ASCII only — the serial console isn't UTF-8).
+  // The disk image still boots as "badger-lab" until rebuilt; settleTerminal()
+  // renames the host and repaints this over the old banner.
+  var CHIRAL_BANNER=[
+    "  ____ _   _ ___ ____      _    _",
+    " / ___| | | |_ _|  _ \\    / \\  | |",
+    "| |   | |_| || || |_) |  / _ \\ | |",
+    "| |___|  _  || ||  _ <   / ___ \\| |___",
+    " \\____|_| |_|___|_| \\_\\ /_/   \\_\\_____|",
+    "           32-bit forensics workbench",
+    "",
+    "Chiral Lab - your challenge files are in ~/challenges.",
+    "Read a briefing to begin:  cat BRIEF-01-photo-day.md"
+  ];
   // ---------------------------------------------------------------------------
   // CONFIG — where the engine + images come from.
   // ---------------------------------------------------------------------------
@@ -245,19 +259,22 @@
   });
 
   // --- serial console wiring -------------------------------------------------
-  var sawOutput=false, bootDone=false;
+  var sawOutput=false, bootDone=false, obuf="", settled=false;
   function finishBoot(){
     if(bootDone) return; bootDone=true;
     setBar(100); $("overlay").classList.add("hidden");
     setStatus("running","ok"); term.focus();
-    try{ fit.fit(); sendResize(); }catch(e){}
   }
   emulator.add_listener("serial0-output-byte", function(byte){
     var ch = String.fromCharCode(byte);
     if(!sawOutput){ sawOutput=true; setBar(60); setStatus("kernel up — starting shell…"); }
     term.write(ch);
+    obuf+=ch; if(obuf.length>4000) obuf=obuf.slice(-2000);
     // Reveal the terminal as soon as we see the first interactive prompt.
     if(!bootDone && (ch==="$" || ch==="#" || ch==="%")){ setTimeout(finishBoot, 350); }
+    // Settle (resize + rename + Chiral banner) only once the real shell prompt
+    // (…/challenges#) shows — not on the early reveal, or it scrolls away mid-boot.
+    if(!settled && /challenges[#$]/.test(obuf)){ settled=true; setTimeout(settleTerminal, 450); }
   });
   // Safety: reveal after boot regardless, so users are never stuck on the overlay.
   // The lab (Debian/systemd) image boots slower than the busybox base, so give it room.
@@ -266,9 +283,24 @@
 
   term.onData(function(data){ emulator.serial0_send(data); });
 
-  function sendResize(){
-    // best-effort: tell the guest our terminal size via stty once shell is up
-    if(bootDone) emulator.serial0_send("stty cols "+term.cols+" rows "+term.rows+" 2>/dev/null\n");
+  // Settle the box once the shell is up: size the tty, rename the host to
+  // chiral-lab, then wipe the boot banner and repaint the Chiral one. One quiet
+  // line (leading space -> no history), ~0.5s after the prompt so no characters
+  // drop mid-boot (the old "stty"->"y cols…" garbage).
+  function settleTerminal(){
+    if(!emulator) return;
+    try{ fit.fit(); }catch(e){}
+    // bash caches the hostname for \h at startup, so renaming the host won't
+    // update this shell's prompt — set PS1 explicitly to finish the rebrand.
+    emulator.serial0_send(" stty rows "+term.rows+" cols "+term.cols+" 2>/dev/null; hostname chiral-lab 2>/dev/null; export PS1='root@chiral-lab:\\w# '\n");
+    setTimeout(function(){
+      try{
+        term.write("\x1b[2J\x1b[3J\x1b[H");
+        CHIRAL_BANNER.forEach(function(l){ term.write(l+"\r\n"); });
+        emulator.serial0_send("\n");
+        term.focus();
+      }catch(e){}
+    }, 500);
   }
   addEventListener("resize", function(){ try{ fit.fit(); }catch(e){} });
 

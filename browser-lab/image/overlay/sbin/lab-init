@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-#  Badger Lab — minimal init (PID 1) for the v86 serial console.
+#  Chiral Lab — minimal init (PID 1) for the v86 serial console.
 # ============================================================================
 # debian-slim ships no init system, and full systemd is slow + finicky under
 # v86 emulation. This tiny init is all the lab needs: bring up the pseudo-
@@ -16,10 +16,11 @@ mount -t devtmpfs dev  /dev     2>/dev/null
 mount -t tmpfs    tmp  /tmp      2>/dev/null
 mount -t tmpfs    run  /run      2>/dev/null
 mount -o remount,rw / 2>/dev/null
-hostname badger-lab 2>/dev/null
+hostname chiral-lab 2>/dev/null
 
 cat /etc/motd 2>/dev/null
-printf '\nBadger Lab — your challenge files are in ~/challenges.\n'
+# Plain ASCII dash: the serial console isn't UTF-8, so an em dash prints as "â".
+printf '\nChiral Lab - your challenge files are in ~/challenges.\n'
 printf 'Read a briefing to begin, e.g.:  cat BRIEF-01-photo-day.md\n\n'
 cd /root/challenges 2>/dev/null || cd /root
 

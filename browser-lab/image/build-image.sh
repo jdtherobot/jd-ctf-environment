@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  Build the Badger Lab v86 image: sanitized files -> 32-bit Debian image ->
+#  Build the Chiral Lab v86 image: sanitized files -> 32-bit Debian image ->
 #  9p filesystem (fs.json + flat/) that terminal.html boots as ACTIVE="lab".
 # ============================================================================
 # Verified this session:  payload assembly, secret-scan, the i386 toolchain
@@ -15,7 +15,7 @@ cd "$(dirname "$0")"
 HERE="$(pwd)"
 REPO_ROOT="$(cd ../.. && pwd)"
 DIST="$HERE/dist"
-TAG="badger-lab:i386"
+TAG="chiral-lab:i386"
 PLATFORM="linux/386"
 
 # Bypass the slow macOS docker credential helper for anonymous Hub pulls.
@@ -56,7 +56,7 @@ echo "   image Architecture=$ARCH"
 
 echo "== 4) export rootfs =="
 mkdir -p "$DIST"
-CN=badger-lab-export
+CN=chiral-lab-export
 docker rm -f "$CN" >/dev/null 2>&1 || true
 docker create --platform "$PLATFORM" --name "$CN" "$TAG" >/dev/null
 docker export "$CN" -o "$DIST/rootfs.tar"

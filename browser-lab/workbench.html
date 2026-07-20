@@ -168,6 +168,38 @@
   .tool .cmd{font-family:var(--mono);font-size:12.5px;color:var(--accent)}
   .tool .desc{font-size:12px;color:var(--ink-dim);line-height:1.45}
 
+  /* ---- hints (priced, in the challenge column) ---- */
+  .hints{margin-top:26px;border-top:1px solid var(--line);padding-top:18px}
+  .hints-none{font-size:12.5px;color:var(--ink-dim)}
+  .hints-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .hints-h{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim)}
+  .hints-score{font-family:var(--mono);font-size:11.5px;color:var(--ink-dim)}
+  .hints-score b{color:var(--accent)}
+  .hint{display:block;width:100%;border:1px solid var(--line);background:var(--panel);margin-bottom:8px}
+  button.hint.locked{cursor:pointer;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ink);font-family:var(--sans);text-align:left}
+  button.hint.locked.next:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+  button.hint.locked[disabled]{opacity:.4;cursor:not-allowed}
+  .hint.taken{padding:10px 12px}
+  .hint-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .hint-lbl{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink)}
+  .hint-cost{font-family:var(--mono);font-size:11px;color:var(--accent-2);white-space:nowrap}
+  .hint-body{font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px}
+
+  /* ---- Kali applications menu ---- */
+  .apps-dlg{max-width:min(680px,96vw);width:96vw}
+  .apps-head{display:flex;align-items:baseline;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .apps-title{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:15px;color:var(--ink)}
+  .apps-sub{font-size:12px;color:var(--ink-dim)}
+  .apps-body{max-height:min(72vh,620px);overflow:auto;padding:14px 16px 20px}
+  .apps-cat{margin-bottom:16px}
+  .apps-cat-h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .app{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);padding:10px 12px;cursor:pointer;text-align:left;color:var(--ink)}
+  .app:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+  .app-ico{color:var(--accent);font-size:12px}
+  .app-nm{font-family:var(--mono);font-size:12.5px}
+  #app-usage{white-space:pre-wrap;word-break:break-word}
+
   /* ---- modal ---- */
   dialog{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--panel-2));color:var(--ink);
     border-radius:16px;padding:0;max-width:560px;width:calc(100% - 32px);box-shadow:var(--shadow)}
@@ -207,12 +239,10 @@
     <nav class="tabs" id="tabs" aria-label="Challenges"></nav>
     <span class="spacer"></span>
     <span class="status" id="status">initializing…</span>
+    <button class="tb" id="btn-apps" title="Browse the tools installed on this box">▦ Applications</button>
     <div class="menu">
       <button class="tb" id="btn-help" aria-haspopup="true" aria-expanded="false">✦ Help</button>
       <div class="menu-pop" id="help-pop" role="menu">
-        <button id="mi-nudge" role="menuitem"><span class="mi-ico">🧭</span><span><span class="mi-t">Give me a nudge</span><span class="mi-s">A hint for this challenge — no spoilers</span></span></button>
-        <button id="mi-toolbox" role="menuitem"><span class="mi-ico">🧰</span><span><span class="mi-t">Reveal the toolbox</span><span class="mi-s">Show every tool on the box, once</span></span></button>
-        <div class="menu-sep"></div>
         <button id="mi-basics" role="menuitem"><span class="mi-ico">⌨️</span><span><span class="mi-t">Terminal basics</span><span class="mi-s">New to the command line? Start here</span></span></button>
       </div>
     </div>
@@ -229,6 +259,7 @@
         <h1 class="ctx-title" id="ctx-title">Loading…</h1>
         <div class="md" id="brief">Loading the briefing…</div>
         <div class="evidence" id="evidence"></div>
+        <div class="hints" id="hints"></div>
       </div>
     </section>
 
@@ -246,38 +277,30 @@
           </div>
         </div>
       </div>
-      <!-- Toolbox: empty and hidden until the facilitator reveals it -->
-      <div class="toolbox" id="toolbox">
-        <div class="toolbox-head">
-          <span class="tt">The toolbox</span>
-          <span class="ts">Click a tool to run it in the terminal.</span>
-        </div>
-        <div class="toolbox-grid" id="toolbox-grid"></div>
-      </div>
     </section>
   </div>
 
 <!-- ===================== dialogs ===================== -->
-<dialog id="dlg-nudge">
-  <div class="dlg">
-    <p class="eyebrow">Facilitator</p>
-    <h3 id="nudge-title">A nudge</h3>
-    <p id="nudge-body"></p>
-    <div class="row"><button class="btn btn-primary" data-close>Got it</button></div>
+<dialog id="dlg-apps" class="apps-dlg">
+  <div class="apps-head">
+    <span class="apps-title">▦ Applications</span>
+    <span class="apps-sub">the tools installed on this box</span>
+    <span style="flex:1"></span>
+    <button class="mini" data-close>✕ Close</button>
   </div>
+  <div class="apps-body" id="apps-body"></div>
 </dialog>
 
-<dialog id="dlg-reveal">
+<dialog id="dlg-app">
   <div class="dlg">
-    <p class="eyebrow">Facilitator</p>
-    <h3>🧰 Open the toolbox?</h3>
-    <p>Every challenge here can be solved with a small set of command-line tools. Part of the fun is
-    figuring out <em>which</em> tool fits — so they stay out of sight until you ask.</p>
-    <p class="muted">Reveal them and a toolbox appears under the terminal. These are the exact tools that,
-    together, crack all four challenges. Click any one to run it in the terminal.</p>
+    <p class="eyebrow" id="app-cat">Application</p>
+    <h3 id="app-name">tool</h3>
+    <p id="app-desc"></p>
+    <p class="muted" style="margin-bottom:6px">How to run</p>
+    <pre id="app-usage"></pre>
     <div class="row">
-      <button class="btn btn-ghost" data-close>Keep them hidden</button>
-      <button class="btn btn-primary" id="do-reveal">Reveal the toolbox</button>
+      <button class="btn btn-ghost" data-close>Close</button>
+      <button class="btn btn-primary" id="app-run">Run in terminal ↵</button>
     </div>
   </div>
 </dialog>
@@ -294,7 +317,7 @@ cat BRIEF-*.md      # print a briefing to the screen
 less email.eml      # scroll a big file  (press q to quit)
 file *              # ask what each file really is</pre>
     <p class="muted"><span class="kbd">Ctrl</span>+<span class="kbd">C</span> stops a running command.
-    Use your OS paste shortcut to paste. Stuck on which tool to use? Open <b>Help → Reveal the toolbox</b>.</p>
+    Use your OS paste shortcut to paste. Not sure what tools you have? Open <b>▦ Applications</b>.</p>
     <div class="row"><button class="btn btn-primary" data-close>Close</button></div>
   </div>
 </dialog>
@@ -317,51 +340,87 @@ file *              # ask what each file really is</pre>
 (function(){
   var $ = function(id){ return document.getElementById(id); };
 
+  // Chiral banner painted after boot (ASCII only — the serial console isn't UTF-8).
+  // Until the disk image is rebuilt it still boots as "badger-lab"; settleTerminal()
+  // renames the host and repaints this over the old banner so the visible box is Chiral.
+  var CHIRAL_BANNER=[
+    "  ____ _   _ ___ ____      _    _",
+    " / ___| | | |_ _|  _ \\    / \\  | |",
+    "| |   | |_| || || |_) |  / _ \\ | |",
+    "| |___|  _  || ||  _ <   / ___ \\| |___",
+    " \\____|_| |_|___|_| \\_\\ /_/   \\_\\_____|",
+    "           32-bit forensics workbench",
+    "",
+    "Chiral Lab - your challenge files are in ~/challenges.",
+    "Read a briefing to begin:  cat BRIEF-01-photo-day.md"
+  ];
+
   // =========================================================================
   //  CHALLENGE DATA — briefs are fetched verbatim from ./challenges/*/BRIEF.md
-  //  Nudges are facilitator hints (no spoilers). No tool names appear here or
-  //  anywhere in the UI until the toolbox is revealed.
+  //  (bare prompt + file list). `hints` are the ORIGINAL author-written hints,
+  //  revealed one at a time; each has a point `cost` (bigger hint => the
+  //  challenge counts for less). `base` = full challenge value. Costs are
+  //  placeholders — see docs/hint-recommendations/. `spoiler:true` gates a hint
+  //  behind an extra confirm. Tools are NOT hints; they live in the Kali menu.
   // =========================================================================
   var CH = [
     { id:"01", slug:"01-photo-day", title:"Photo Day",
-      eyebrow:"Challenge 01 · Intercept",
+      eyebrow:"Challenge 01 · Intercept", base:100,
       brief:"challenges/01-photo-day/BRIEF.md",
       files:[ {name:"email.eml", kind:"eml", url:"challenges/01-photo-day/email.eml", sub:"the intercepted message"} ],
-      nudge:"It's an email with an attachment. Read the sender's own words closely — he's chatty for a reason, and he even hands you something he swears is “definitely not the password.” Separate the attachment from the letter, then look inside the picture, not just at it." },
+      hints:[] },
     { id:"02", slug:"02-stegosaurus-1", title:"Stegosaurus 1",
-      eyebrow:"Challenge 02 · Steganography",
+      eyebrow:"Challenge 02 · Steganography", base:200,
       brief:"challenges/02-stegosaurus-1/BRIEF.md",
       files:[ {name:"stego_badger.jpeg", kind:"image", url:"challenges/02-stegosaurus-1/stego_badger.jpeg", sub:"the carrier image"} ],
-      nudge:"The photo opens fine, but something is tucked inside the pixels behind a passphrase. The badger's note — “WE WILL, WE WILL…” — is naming a very famous password list. Finish the lyric, then throw that list at the lock." },
+      hints:[
+        { cost:25, body:"WE WILL, WE WILL…" },
+        { cost:50, body:"Try common password lists / stego tools." }
+      ] },
     { id:"03", slug:"03-warehouse", title:"The Memory Warehouse",
-      eyebrow:"Challenge 03 · Architecture",
+      eyebrow:"Challenge 03 · Architecture", base:300,
       brief:"challenges/03-warehouse/BRIEF.md",
       warehouse:true,
-      nudge:"This one is a page-table walk, not a file. Take the low 48 bits of the virtual address and split them 9/9/9/9/12. Each 9-bit slice is one coordinate — row, shelf level, bay, sub-section — and the last 12 bits are the box. Resolve it on paper, then walk to that exact box in the warehouse." },
+      hints:[
+        { cost:50, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = shelf level (bottom = 1 → top = 3); L3 = bay depth (front = 1, back = 2); L4 = sub-section of that bay's grate; and the offset = the box number." },
+        { cost:75, spoiler:true, body:"Split the low 48 bits of the VA into [L1 9][L2 9][L3 9][L4 9][OFFSET 12]. Walk level by level (L1 → L4), then use the offset to pick the exact box." }
+      ] },
     { id:"04", slug:"04-stegosaurus-3", title:"Stegosaurus 3",
-      eyebrow:"Challenge 04 · Steganography",
+      eyebrow:"Challenge 04 · Steganography", base:500,
       brief:"challenges/04-stegosaurus-3/BRIEF.md",
       files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/04-stegosaurus-3/Honey.jpeg", sub:"one file, many layers"} ],
-      nudge:"One file can be many files stacked together. Start by asking what's really inside: scan it for other file signatures, carve out what you find, and expect at least one decoy. Every layer you crack protects the next one." }
+      hints:[] }
   ];
 
-  // The exact toolkit that solves all four challenges. Hidden until revealed.
-  // {run} is sent to the shell verbatim (echoed by the box, so novices see it typed).
-  var TOOLS = [
-    { run:"cd ~/challenges && ls -la",                         desc:"See your challenge files and where you are." },
-    { run:"file *",                                            desc:"Ask what each file really is, past its extension." },
-    { run:"exiftool stego_badger.jpeg",                        desc:"Read a photo's metadata — camera, comments, hidden tags." },
-    { run:"steghide extract -sf stego_badger.jpeg",            desc:"Pull a payload hidden inside a JPEG (asks for the passphrase)." },
-    { run:"stegcracker stego_badger.jpeg wordlist.txt",        desc:"Brute-force a steghide passphrase against a wordlist." },
-    { run:"binwalk Honey.jpeg",                                desc:"Scan a file for other files hidden inside it." },
-    { run:"binwalk --dd='.*' Honey.jpeg",                      desc:"Carve every embedded file back out to disk." },
-    { run:"xxd Honey.jpeg | less",                             desc:"Read the raw bytes in hex (press q to quit)." },
-    { run:"openssl enc -d -aes-256-cbc -in FILE -out out.bin", desc:"Decrypt an AES-encrypted blob once you have the key." },
-    { run:"unzip -l FILE.zip",                                 desc:"List what's inside an archive you carved out." },
-    { run:"python3 FILE.py",                                   desc:"Run a helper script (e.g. one you recover mid-challenge)." }
+  // =========================================================================
+  //  KALI APPLICATIONS — the tools that actually ship in this image, arranged
+  //  in Kali's menu-folder style so a newcomer can browse what's available.
+  //  Clicking an app opens its detail card (what it does + how to run) with a
+  //  "Run in terminal" button. Not gated — this is reference, not a hint.
+  // =========================================================================
+  var KALI = [
+    { cat:"Forensics", items:[
+      { name:"exiftool", desc:"Read and edit a file's metadata — camera info, comments, and hidden EXIF/JPEG tags.", usage:"exiftool <file>", run:"exiftool stego_badger.jpeg" },
+      { name:"binwalk",  desc:"Scan a file for other files hidden or appended inside it, then carve them back out.", usage:"binwalk <file>   ·   binwalk --dd='.*' <file>", run:"binwalk Honey.jpeg" }
+    ]},
+    { cat:"Password Attacks", items:[
+      { name:"stegcracker", desc:"Brute-force a steghide passphrase against a wordlist.", usage:"stegcracker <file> <wordlist>", run:"stegcracker stego_badger.jpeg wordlist.txt" }
+    ]},
+    { cat:"Steganography", items:[
+      { name:"steghide", desc:"Hide a file inside a JPEG behind a passphrase — or extract one back out.", usage:"steghide extract -sf <file>", run:"steghide extract -sf stego_badger.jpeg" },
+      { name:"stegcracker", desc:"Crack a steghide passphrase with a wordlist (see Password Attacks).", usage:"stegcracker <file> <wordlist>", run:"stegcracker stego_badger.jpeg wordlist.txt" }
+    ]},
+    { cat:"Accessories", items:[
+      { name:"openssl", desc:"Encrypt/decrypt data. Here: decrypt an AES-encrypted blob once you have the key/password.", usage:"openssl enc -d -aes-256-cbc -pbkdf2 -in <file> -out out.bin", run:"" },
+      { name:"file",    desc:"Ask what a file really is, past its extension.", usage:"file <file>", run:"file *" },
+      { name:"xxd",     desc:"Dump the raw bytes of a file as hex + ASCII.", usage:"xxd <file> | less", run:"xxd Honey.jpeg | less" },
+      { name:"dd",      desc:"Copy/carve raw bytes — pull an embedded file out at a known offset.", usage:"dd if=<file> of=out.bin bs=1 skip=<offset>", run:"" },
+      { name:"zip / unzip", desc:"List and extract archives you carve out.", usage:"unzip -l <file>.zip   ·   unzip <file>.zip", run:"" },
+      { name:"python3", desc:"Run a helper script (e.g. one you recover mid-challenge).", usage:"python3 <script>.py", run:"" },
+      { name:"less",    desc:"Scroll through a big file one screen at a time (press q to quit).", usage:"less <file>", run:"" },
+      { name:"nano / vim", desc:"Edit a text file in the terminal.", usage:"nano <file>   ·   vim <file>", run:"" }
+    ]}
   ];
-
-  var TOOLBOX_KEY = "chirallab-toolbox-open";
 
   // =========================================================================
   //  Tiny, dependency-free Markdown -> HTML (enough for the briefs: headings,
@@ -471,6 +530,7 @@ file *              # ask what each file really is</pre>
     $("ctx-eyebrow").textContent=c.eyebrow;
     $("ctx-title").textContent=c.title;
     renderEvidence(c);
+    renderHints(c);
     var briefEl=$("brief");
     if(briefCache[c.brief]){ briefEl.innerHTML=briefCache[c.brief]; }
     else{
@@ -519,26 +579,72 @@ file *              # ask what each file really is</pre>
   document.addEventListener("click",function(){ closeHelp(); });
   helpPop.addEventListener("click",function(e){ e.stopPropagation(); });
 
-  $("mi-nudge").addEventListener("click",function(){ closeHelp(); var c=CH[current];
-    $("nudge-title").textContent="Nudge · "+c.title; $("nudge-body").textContent=c.nudge; showDlg($("dlg-nudge")); });
   $("mi-basics").addEventListener("click",function(){ closeHelp(); showDlg($("dlg-basics")); });
-  $("mi-toolbox").addEventListener("click",function(){ closeHelp();
-    if($("toolbox").classList.contains("open")){ $("toolbox").scrollIntoView({behavior:"smooth",block:"nearest"}); }
-    else showDlg($("dlg-reveal")); });
-  $("do-reveal").addEventListener("click",function(){ var d=$("dlg-reveal"); if(d.close)d.close(); revealToolbox(true); });
 
-  function buildToolbox(){
-    var g=$("toolbox-grid"); g.innerHTML="";
-    TOOLS.forEach(function(t){
-      var b=document.createElement("button"); b.className="tool";
-      b.innerHTML='<span class="cmd">'+esc(t.run)+'</span><span class="desc">'+esc(t.desc)+'</span>';
-      b.addEventListener("click",function(){ runInTerminal(t.run); });
-      g.appendChild(b);
+  function closeAllDialogs(){ Array.prototype.forEach.call(document.querySelectorAll("dialog[open]"),function(d){ if(d.close)d.close(); else d.removeAttribute("open"); }); }
+
+  // ---- Kali applications menu: browse the tools on this box ----
+  function buildAppsMenu(){
+    var b=$("apps-body"); b.innerHTML="";
+    KALI.forEach(function(g){
+      var sec=document.createElement("div"); sec.className="apps-cat";
+      sec.innerHTML='<div class="apps-cat-h">'+esc(g.cat)+'</div>';
+      var grid=document.createElement("div"); grid.className="apps-grid";
+      g.items.forEach(function(it){
+        var btn=document.createElement("button"); btn.className="app";
+        btn.innerHTML='<span class="app-ico">▸</span><span class="app-nm">'+esc(it.name)+'</span>';
+        btn.addEventListener("click",function(){ openApp(g.cat,it); });
+        grid.appendChild(btn);
+      });
+      sec.appendChild(grid); b.appendChild(sec);
     });
   }
-  function revealToolbox(persist){
-    buildToolbox(); $("toolbox").classList.add("open");
-    if(persist){ try{ localStorage.setItem(TOOLBOX_KEY,"1"); }catch(e){} $("toolbox").scrollIntoView({behavior:"smooth",block:"nearest"}); }
+  var appsBuilt=false;
+  $("btn-apps").addEventListener("click",function(){ if(!appsBuilt){ buildAppsMenu(); appsBuilt=true; } showDlg($("dlg-apps")); });
+
+  function openApp(cat,it){
+    $("app-cat").textContent=cat;
+    $("app-name").textContent=it.name;
+    $("app-desc").textContent=it.desc;
+    $("app-usage").textContent=it.usage;
+    var runBtn=$("app-run");
+    if(it.run){ runBtn.style.display=""; runBtn.onclick=function(){ closeAllDialogs(); runInTerminal(it.run); }; }
+    else { runBtn.style.display="none"; }
+    showDlg($("dlg-app"));
+  }
+
+  // ---- hints: the author's originals, revealed one at a time, each with a cost ----
+  var revealed={}; // challenge id -> highest hint index revealed (-1 = none)
+  function potentialScore(c){
+    var r=(c.id in revealed)?revealed[c.id]:-1, spent=0;
+    for(var i=0;i<=r;i++){ spent += (c.hints[i]&&c.hints[i].cost)||0; }
+    return Math.max(0, c.base - spent);
+  }
+  function renderHints(c){
+    var h=$("hints");
+    if(!c.hints||!c.hints.length){ h.innerHTML='<div class="hints-none">No hints for this one — you’re on your own. Good hunting.</div>'; return; }
+    var r=(c.id in revealed)?revealed[c.id]:-1;
+    var html='<div class="hints-head"><span class="hints-h">Hints</span>'+
+             '<span class="hints-score">Potential score <b>'+potentialScore(c)+'</b> / '+c.base+' pts</span></div>';
+    c.hints.forEach(function(hint,i){
+      if(i<=r){
+        html+='<div class="hint taken"><div class="hint-top"><span class="hint-lbl">Hint '+(i+1)+(hint.spoiler?' · spoiler':'')+'</span>'+
+              '<span class="hint-cost">−'+hint.cost+' pts</span></div><div class="hint-body">'+inline(hint.body)+'</div></div>';
+      } else {
+        var canOpen=(i===r+1);
+        html+='<button class="hint locked'+(canOpen?" next":"")+'" data-hint="'+i+'"'+(canOpen?"":" disabled")+'>'+
+              '<span class="hint-lbl">Hint '+(i+1)+(hint.spoiler?' · spoiler':'')+'</span>'+
+              '<span class="hint-cost">reveal · −'+hint.cost+' pts</span></button>';
+      }
+    });
+    h.innerHTML=html;
+    Array.prototype.forEach.call(h.querySelectorAll("[data-hint]"),function(btn){
+      btn.addEventListener("click",function(){
+        var i=+btn.dataset.hint, hint=c.hints[i];
+        if(hint.spoiler && !confirm("This hint nearly gives it away (−"+hint.cost+" pts). Reveal it?")) return;
+        revealed[c.id]=i; renderHints(c);
+      });
+    });
   }
 
   // =========================================================================
@@ -587,8 +693,7 @@ file *              # ask what each file really is</pre>
     host.innerHTML='<div style="position:absolute;inset:0;padding:22px;overflow:auto;color:var(--ink-dim);font-size:13.5px">'+
       '<p style="margin-top:0"><b style="color:var(--ink)">Work offline.</b> Every challenge file, ready to download. '+
       'Read each briefing on the left, then use tools on your own computer.</p><div>'+items+'</div>'+
-      '<p style="margin-top:18px">On a machine with the toolkit installed, the same commands from the toolbox apply.</p></div>';
-    $("toolbox").classList.remove("open");
+      '<p style="margin-top:18px">On a machine with the toolkit installed, the same commands from ▦ Applications apply.</p></div>';
   }
 
   // xterm
@@ -634,21 +739,43 @@ file *              # ask what each file really is</pre>
       bootFailed("A boot asset failed to download"+(e&&e.file_name?(" ("+e.file_name+")"):"")+". The lab image may not be published on this host yet.");
     });
 
-    var sawOutput=false, bootDone=false;
+    var sawOutput=false, bootDone=false, obuf="", settled=false;
     function finishBoot(){ if(bootDone)return; bootDone=true; setBar(100); $("overlay").classList.add("hidden");
-      setStatus("running","ok"); term.focus(); try{ fit.fit(); sendResize(); }catch(e){} }
+      setStatus("running","ok"); term.focus(); }
     emulator.add_listener("serial0-output-byte",function(byte){
       var ch=String.fromCharCode(byte);
       if(!sawOutput){ sawOutput=true; setBar(60); setStatus("kernel up — starting shell…"); }
       term.write(ch);
+      obuf+=ch; if(obuf.length>4000) obuf=obuf.slice(-2000);
       if(!bootDone && (ch==="$"||ch==="#"||ch==="%")){ setTimeout(finishBoot,350); }
+      // Settle only when the real shell prompt shows (…/challenges#), not on the
+      // early reveal — otherwise the rename/banner lands mid-boot and scrolls away.
+      if(!settled && /challenges[#$]/.test(obuf)){ settled=true; setTimeout(settleTerminal,450); }
     });
     setTimeout(function(){ if(sawOutput) finishBoot(); }, 12000);
     // Lab image (Debian) boots slower than a busybox base — give it room, then fall back honestly.
     setTimeout(function(){ if(!sawOutput){ bootFailed("The lab image didn’t respond in time. If this is a fresh deploy, the image may still be publishing."); } else { finishBoot(); } }, 75000);
 
     term.onData(function(d){ emulator.serial0_send(d); });
-    function sendResize(){ if(bootDone) emulator.serial0_send("stty cols "+term.cols+" rows "+term.rows+" 2>/dev/null\n"); }
+    // Settle the box once the shell is up: size the tty, rename the host to
+    // chiral-lab, then wipe the boot banner and repaint the Chiral one. Sent as
+    // one quiet line (leading space -> not saved to history), ~0.5s after the
+    // prompt so no characters drop mid-boot (the old "stty"->"y cols…" garbage).
+    function settleTerminal(){
+      if(!emulator) return;
+      try{ fit.fit(); }catch(e){}
+      // bash caches the hostname for \h at startup, so renaming the host won't
+      // update this shell's prompt — set PS1 explicitly to finish the rebrand.
+      emulator.serial0_send(" stty rows "+term.rows+" cols "+term.cols+" 2>/dev/null; hostname chiral-lab 2>/dev/null; export PS1='root@chiral-lab:\\w# '\n");
+      setTimeout(function(){
+        try{
+          term.write("\x1b[2J\x1b[3J\x1b[H");
+          CHIRAL_BANNER.forEach(function(l){ term.write(l+"\r\n"); });
+          emulator.serial0_send("\n");
+          term.focus();
+        }catch(e){}
+      }, 500);
+    }
     addEventListener("resize",function(){ try{ fit.fit(); }catch(e){} });
 
     // snapshot to IndexedDB
@@ -699,7 +826,6 @@ file *              # ask what each file really is</pre>
   var start=0, hash=(location.hash||"").replace(/^#/,"");
   if(hash){ CH.forEach(function(c,i){ if(c.slug===hash) start=i; }); }
   select(start);
-  try{ if(localStorage.getItem(TOOLBOX_KEY)==="1") revealToolbox(false); }catch(e){}
   initTerminal();
 })();
 </script>
