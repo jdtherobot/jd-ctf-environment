@@ -113,6 +113,7 @@
   .mini{font:600 11.5px/1 var(--sans);background:transparent;color:var(--ink-dim);border:1px solid var(--line);
     border-radius:8px;padding:7px 9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   .mini:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--accent)}
+  .mini[hidden]{display:none}
 
   .warehouse-cta{border:1px solid color-mix(in srgb,var(--accent-2) 40%,var(--line));border-radius:12px;padding:16px;
     background:color-mix(in srgb,var(--accent-2) 7%,var(--panel))}
@@ -198,8 +199,10 @@
   .app:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
   .app-ico{color:var(--accent);font-size:12px}
   .app-nm{font-family:var(--mono);font-size:12.5px}
-  .app.app-off{opacity:.45}
-  .app.app-off:hover{opacity:.7;border-color:var(--line)}
+  .apps-banner{display:flex;align-items:center;gap:8px;margin:0 0 16px;padding:9px 12px;
+    border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));background:color-mix(in srgb,var(--accent) 7%,transparent);
+    font-size:12.5px;color:var(--ink)}
+  .apps-banner b{color:var(--accent);font-weight:600}
   #app-usage{white-space:pre-wrap;word-break:break-word}
   #app-note{color:var(--accent-2)}
 
@@ -217,7 +220,9 @@
   .mail-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-dim);padding-bottom:12px;border-bottom:1px solid var(--line)}
   .mail-meta b{color:var(--accent-2);font-weight:600;letter-spacing:.02em}
   .mail-atts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
-  .mail-att{font-family:var(--mono);font-size:12px;border:1px solid var(--line);padding:6px 10px;color:var(--ink)}
+  .mail-att{font-family:var(--mono);font-size:12px;border:1px solid var(--line);padding:6px 10px;color:var(--ink);
+    background:transparent;cursor:pointer;transition:border-color .15s,color .15s}
+  .mail-att:hover,.mail-att:focus-visible{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));color:var(--accent);outline:none}
   .mail-body{font-size:14.5px;line-height:1.7;color:var(--ink);margin-top:14px;white-space:normal}
   .mail-foot{font-size:12px;color:var(--ink-dim);margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
 
@@ -267,7 +272,7 @@
     <nav class="tabs" id="tabs" aria-label="Challenges"></nav>
     <span class="spacer"></span>
     <span class="status" id="status">initializing…</span>
-    <button class="tb" id="btn-apps" title="Browse the tools installed on this box">▦ Applications</button>
+    <button class="tb" id="btn-apps" title="Browse the tools available on this box">▦ Applications</button>
     <div class="menu">
       <button class="tb" id="btn-help" aria-haspopup="true" aria-expanded="false">✦ Help</button>
       <div class="menu-pop" id="help-pop" role="menu">
@@ -312,7 +317,7 @@
 <dialog id="dlg-apps" class="apps-dlg">
   <div class="apps-head">
     <span class="apps-title">▦ Applications</span>
-    <span class="apps-sub">the tools installed on this box</span>
+    <span class="apps-sub">the Kali toolkit, for reference</span>
     <span style="flex:1"></span>
     <button class="mini" data-close>✕ Close</button>
   </div>
@@ -324,12 +329,10 @@
     <p class="eyebrow" id="app-cat">Application</p>
     <h3 id="app-name">tool</h3>
     <p id="app-desc"></p>
-    <p class="muted" id="app-note" style="display:none">Not installed on this box — listed for reference.</p>
     <p class="muted" id="app-howto" style="margin-bottom:6px">How to run</p>
     <pre id="app-usage"></pre>
     <div class="row">
-      <button class="btn btn-ghost" data-close>Close</button>
-      <button class="btn btn-primary" id="app-run">Run in terminal ↵</button>
+      <button class="btn btn-primary" data-close>Close</button>
     </div>
   </div>
 </dialog>
@@ -355,7 +358,9 @@ file *              # ask what each file really is</pre>
   <div class="vhead">
     <span class="vt" id="viewer-title">file</span>
     <span class="spacer" style="flex:1"></span>
+    <button class="mini" id="viewer-back" hidden>← Back to the email</button>
     <a class="mini" id="viewer-dl" download>↓ Download</a>
+    <button class="mini" id="viewer-box" hidden>⤓ Save to the box</button>
     <button class="mini" data-close>✕ Close</button>
   </div>
   <div class="vbody" id="viewer-body"></div>
@@ -426,37 +431,39 @@ file *              # ask what each file really is</pre>
 
   // =========================================================================
   //  KALI APPLICATIONS — the real Kali menu structure, so a newcomer can browse
-  //  what a Kali box offers. `on:true` = actually installed on THIS image
-  //  (runnable, with a Run button); the rest are reference-only info cards so the
-  //  handful you'll actually use don't stand out. Not gated — never a hint.
+  //  what a Kali box offers. Every tool is presented identically — same card, same
+  //  "How to run" note — so the handful you actually need never stand out. `on:true`
+  //  records which are truly installed on THIS image (doc-only; the UI never reads it
+  //  or shows it). If you run one that isn't installed, the terminal says so and
+  //  reassures you everything required is present. Not gated — never a hint.
   // =========================================================================
   var KALI = [
     { cat:"01 · Information Gathering", items:[
-      { name:"nmap", on:true, desc:"Scan hosts and ports; fingerprint services.", usage:"nmap <target>", run:"nmap -sV localhost" },
+      { name:"nmap", on:true, desc:"Scan hosts and ports; fingerprint services.", usage:"nmap <target>" },
       { name:"whois", on:true, desc:"Look up domain/IP registration records.", usage:"whois <domain>" },
       { name:"dig", on:true, desc:"Query DNS records (dnsutils).", usage:"dig <domain> ANY" },
-      { name:"netdiscover", desc:"Active/passive ARP reconnaissance on a subnet." },
-      { name:"dnsenum", desc:"Enumerate DNS info and subdomains for a domain." },
-      { name:"theharvester", desc:"Gather emails, hosts, and names from public sources." },
-      { name:"recon-ng", desc:"Full-featured web reconnaissance framework." }
+      { name:"netdiscover", desc:"Active/passive ARP reconnaissance on a subnet.", usage:"netdiscover -r <subnet>/24" },
+      { name:"dnsenum", desc:"Enumerate DNS info and subdomains for a domain.", usage:"dnsenum <domain>" },
+      { name:"theharvester", desc:"Gather emails, hosts, and names from public sources.", usage:"theHarvester -d <domain> -b all" },
+      { name:"recon-ng", desc:"Full-featured web reconnaissance framework.", usage:"recon-ng" }
     ]},
     { cat:"02 · Vulnerability Analysis", items:[
-      { name:"nikto", desc:"Scan a web server for known vulnerabilities and misconfigurations." },
-      { name:"lynis", desc:"Audit a Unix system's security posture." },
-      { name:"sqlmap", desc:"Detect and exploit SQL-injection flaws (also Web/DB)." }
+      { name:"nikto", desc:"Scan a web server for known vulnerabilities and misconfigurations.", usage:"nikto -h <url>" },
+      { name:"lynis", desc:"Audit a Unix system's security posture.", usage:"lynis audit system" },
+      { name:"sqlmap", desc:"Detect and exploit SQL-injection flaws (also Web/DB).", usage:"sqlmap -u <url> --batch" }
     ]},
     { cat:"03 · Web Application Analysis", items:[
-      { name:"sqlmap", desc:"Automated SQL-injection detection and exploitation." },
-      { name:"gobuster", desc:"Brute-force URIs, DNS subdomains, and vhosts." },
-      { name:"dirb", desc:"Content-discovery scanner for hidden web paths." },
-      { name:"ffuf", desc:"Fast web fuzzer for paths and parameters." },
-      { name:"whatweb", desc:"Identify the technologies a website runs." },
-      { name:"burpsuite", desc:"Intercepting proxy and web-app testing suite (GUI)." }
+      { name:"sqlmap", desc:"Automated SQL-injection detection and exploitation.", usage:"sqlmap -u <url> --batch" },
+      { name:"gobuster", desc:"Brute-force URIs, DNS subdomains, and vhosts.", usage:"gobuster dir -u <url> -w <wordlist>" },
+      { name:"dirb", desc:"Content-discovery scanner for hidden web paths.", usage:"dirb <url> <wordlist>" },
+      { name:"ffuf", desc:"Fast web fuzzer for paths and parameters.", usage:"ffuf -u <url>/FUZZ -w <wordlist>" },
+      { name:"whatweb", desc:"Identify the technologies a website runs.", usage:"whatweb <url>" },
+      { name:"burpsuite", desc:"Intercepting proxy and web-app testing suite (GUI).", usage:"burpsuite" }
     ]},
     { cat:"04 · Database Assessment", items:[
       { name:"sqlite3", on:true, desc:"Open and query SQLite databases you recover.", usage:"sqlite3 <file.db> '.tables'" },
-      { name:"sqlmap", desc:"SQL-injection tool with DB dumping." },
-      { name:"mdb-tools", desc:"Read Microsoft Access .mdb databases." }
+      { name:"sqlmap", desc:"SQL-injection tool with DB dumping.", usage:"sqlmap -u <url> --dump" },
+      { name:"mdb-tools", desc:"Read Microsoft Access .mdb databases.", usage:"mdb-tables <file.mdb>" }
     ]},
     { cat:"05 · Password Attacks", items:[
       { name:"john", on:true, desc:"John the Ripper — crack password hashes.", usage:"john --wordlist=<list> <hashfile>" },
@@ -464,69 +471,69 @@ file *              # ask what each file really is</pre>
       { name:"fcrackzip", on:true, desc:"Brute-force / dictionary-crack a password-protected ZIP.", usage:"fcrackzip -u -D -p <wordlist> <file.zip>" },
       { name:"pdfcrack", on:true, desc:"Recover the password of an encrypted PDF.", usage:"pdfcrack -w <wordlist> <file.pdf>" },
       { name:"hashid", on:true, desc:"Identify the type of a hash.", usage:"hashid <hash>" },
-      { name:"stegcracker", on:true, desc:"Brute-force a steghide passphrase against a wordlist.", usage:"stegcracker <file> <wordlist>", run:"" },
-      { name:"hashcat", desc:"GPU-accelerated hash cracker (needs a GPU)." },
-      { name:"crunch", desc:"Generate custom wordlists by pattern." },
-      { name:"cewl", desc:"Build a wordlist by spidering a website." },
-      { name:"medusa", desc:"Parallel network login brute-forcer." }
+      { name:"stegcracker", on:true, desc:"Brute-force a steghide passphrase against a wordlist.", usage:"stegcracker <file> <wordlist>" },
+      { name:"hashcat", desc:"GPU-accelerated hash cracker.", usage:"hashcat -m <mode> <hashfile> <wordlist>" },
+      { name:"crunch", desc:"Generate custom wordlists by pattern.", usage:"crunch <min> <max> -o wordlist.txt" },
+      { name:"cewl", desc:"Build a wordlist by spidering a website.", usage:"cewl <url> -w wordlist.txt" },
+      { name:"medusa", desc:"Parallel network login brute-forcer.", usage:"medusa -h <host> -u <user> -P <list> -M <service>" }
     ]},
     { cat:"06 · Wireless Attacks", items:[
-      { name:"aircrack-ng", desc:"Wi-Fi WEP/WPA key cracking suite." },
-      { name:"reaver", desc:"Brute-force WPS PINs to recover WPA keys." },
-      { name:"wifite", desc:"Automated wireless auditing wrapper." },
-      { name:"kismet", desc:"Wireless network detector and sniffer." }
+      { name:"aircrack-ng", desc:"Wi-Fi WEP/WPA key cracking suite.", usage:"aircrack-ng <capture.cap>" },
+      { name:"reaver", desc:"Brute-force WPS PINs to recover WPA keys.", usage:"reaver -i <iface> -b <bssid>" },
+      { name:"wifite", desc:"Automated wireless auditing wrapper.", usage:"wifite" },
+      { name:"kismet", desc:"Wireless network detector and sniffer.", usage:"kismet" }
     ]},
     { cat:"07 · Reverse Engineering", items:[
-      { name:"radare2", desc:"Reverse-engineering framework: disassemble, debug, patch." },
+      { name:"radare2", desc:"Reverse-engineering framework: disassemble, debug, patch.", usage:"r2 <binary>" },
       { name:"objdump", on:true, desc:"Disassemble and inspect object files (binutils).", usage:"objdump -d <binary>" },
       { name:"readelf", on:true, desc:"Show the structure of an ELF binary (binutils).", usage:"readelf -a <binary>" },
       { name:"strings", on:true, desc:"Print the printable strings inside a binary (binutils).", usage:"strings <file>" },
       { name:"ltrace", on:true, desc:"Trace a program's library calls.", usage:"ltrace <binary>" },
       { name:"strace", on:true, desc:"Trace a program's system calls.", usage:"strace <binary>" },
-      { name:"gdb", desc:"The GNU debugger." },
-      { name:"ghidra", desc:"NSA reverse-engineering suite (GUI)." }
+      { name:"gdb", desc:"The GNU debugger.", usage:"gdb <binary>" },
+      { name:"ghidra", desc:"NSA reverse-engineering suite (GUI).", usage:"ghidra" }
     ]},
     { cat:"08 · Exploitation Tools", items:[
-      { name:"metasploit-framework", desc:"The exploitation and payload framework (msfconsole)." },
-      { name:"searchsploit", desc:"Search the Exploit-DB archive from the command line." },
-      { name:"msfvenom", desc:"Generate and encode payloads." }
+      { name:"metasploit-framework", desc:"The exploitation and payload framework (msfconsole).", usage:"msfconsole" },
+      { name:"searchsploit", desc:"Search the Exploit-DB archive from the command line.", usage:"searchsploit <term>" },
+      { name:"msfvenom", desc:"Generate and encode payloads.", usage:"msfvenom -p <payload> -f <format>" }
     ]},
     { cat:"09 · Sniffing & Spoofing", items:[
       { name:"tcpdump", on:true, desc:"Capture and inspect network packets on the wire.", usage:"tcpdump -r <file.pcap>" },
       { name:"nc", on:true, desc:"Netcat — read/write raw TCP/UDP; move data and files.", usage:"nc <host> <port>" },
-      { name:"wireshark", desc:"Graphical packet capture and analysis (GUI)." },
-      { name:"ettercap", desc:"Man-in-the-middle attacks on a LAN." },
-      { name:"responder", desc:"Poison LLMNR/NBT-NS to capture credentials." }
+      { name:"wireshark", desc:"Graphical packet capture and analysis (GUI).", usage:"wireshark <capture.pcap>" },
+      { name:"ettercap", desc:"Man-in-the-middle attacks on a LAN.", usage:"ettercap -T -i <iface>" },
+      { name:"responder", desc:"Poison LLMNR/NBT-NS to capture credentials.", usage:"responder -I <iface>" }
     ]},
     { cat:"10 · Post Exploitation", items:[
-      { name:"mimikatz", desc:"Extract Windows credentials from memory." },
-      { name:"weevely", desc:"Stealth PHP web shell." },
-      { name:"powersploit", desc:"PowerShell post-exploitation modules." }
+      { name:"mimikatz", desc:"Extract Windows credentials from memory.", usage:"mimikatz" },
+      { name:"weevely", desc:"Stealth PHP web shell.", usage:"weevely <url> <password>" },
+      { name:"powersploit", desc:"PowerShell post-exploitation modules.", usage:"powersploit" }
     ]},
     { cat:"11 · Forensics", items:[
-      { name:"binwalk", on:true, desc:"Scan a file for embedded files and carve them out.", usage:"binwalk <file>   ·   binwalk --dd='.*' <file>", run:"binwalk Honey.jpeg" },
+      { name:"binwalk", on:true, desc:"Scan a file for embedded files and carve them out.", usage:"binwalk <file>   ·   binwalk --dd='.*' <file>" },
       { name:"foremost", on:true, desc:"Carve files out of a blob by their signatures.", usage:"foremost -i <file> -o out/" },
       { name:"scalpel", on:true, desc:"Fast file carver driven by a header/footer config.", usage:"scalpel <file> -o out/" },
-      { name:"bulk_extractor", desc:"Scan a file/image for emails, URLs, keys, and more." },
-      { name:"exiftool", on:true, desc:"Read/edit metadata — EXIF, comments, hidden tags.", usage:"exiftool <file>", run:"" },
+      { name:"bulk_extractor", desc:"Scan a file/image for emails, URLs, keys, and more.", usage:"bulk_extractor -o out/ <file>" },
+      { name:"exiftool", on:true, desc:"Read/edit metadata — EXIF, comments, hidden tags.", usage:"exiftool <file>" },
       { name:"exiv2", on:true, desc:"Another metadata reader/editor for images.", usage:"exiv2 -pa <file>" },
-      { name:"steghide", on:true, desc:"Hide a file in a JPEG behind a passphrase — or extract it.", usage:"steghide extract -sf <file>", run:"" },
+      { name:"steghide", on:true, desc:"Hide a file in a JPEG behind a passphrase — or extract it.", usage:"steghide extract -sf <file>" },
       { name:"outguess", on:true, desc:"Extract data hidden with the outguess stego tool.", usage:"outguess -r <file> out.txt" },
       { name:"pngcheck", on:true, desc:"Validate and inspect the chunk structure of a PNG.", usage:"pngcheck -v <file.png>" },
       { name:"ent", on:true, desc:"Measure a file's entropy — spot encrypted/compressed blobs.", usage:"ent <file>" },
       { name:"imagemagick", on:true, desc:"Inspect/convert images (identify, convert, mogrify).", usage:"identify -verbose <file>" },
       { name:"pdfimages", on:true, desc:"Extract embedded images from a PDF (poppler-utils).", usage:"pdfimages -all <file.pdf> out" },
       { name:"hexedit", on:true, desc:"Edit a file's raw bytes interactively.", usage:"hexedit <file>" },
-      { name:"volatility", desc:"Memory-forensics framework for RAM dumps." },
-      { name:"testdisk", desc:"Recover lost partitions and undelete files." },
-      { name:"autopsy", desc:"Digital-forensics browser front-end (GUI)." }
+      { name:"volatility", desc:"Memory-forensics framework for RAM dumps.", usage:"volatility -f <dump> <plugin>" },
+      { name:"testdisk", desc:"Recover lost partitions and undelete files.", usage:"testdisk <image>" },
+      { name:"autopsy", desc:"Digital-forensics browser front-end (GUI).", usage:"autopsy" }
     ]},
     { cat:"12 · Reporting Tools", items:[
-      { name:"cutycapt", desc:"Capture a web page to an image." },
-      { name:"pipal", desc:"Analyze cracked-password statistics." }
+      { name:"cutycapt", desc:"Capture a web page to an image.", usage:"cutycapt --url=<url> --out=page.png" },
+      { name:"pipal", desc:"Analyze cracked-password statistics.", usage:"pipal <passwords.txt>" }
     ]},
     { cat:"Usual Applications · Accessories", items:[
-      { name:"bash", on:true, desc:"The shell you're typing into.", usage:"" },
+      { name:"bash", on:true, desc:"The shell you're typing into.", usage:"bash <script>.sh" },
       { name:"openssl", on:true, desc:"Encrypt/decrypt and hash. Here: decrypt an AES blob once you have the key.", usage:"openssl enc -d -aes-256-cbc -pbkdf2 -in <file> -out out.bin", run:"" },
       { name:"gpg", on:true, desc:"Encrypt/decrypt/sign with GnuPG.", usage:"gpg -d <file.gpg>" },
       { name:"file", on:true, desc:"Ask what a file really is, past its extension.", usage:"file <file>", run:"file *" },
@@ -690,15 +697,20 @@ file *              # ask what each file really is</pre>
   //  File viewer + warehouse overlay (same dialog, different body)
   // =========================================================================
   var dlgViewer=$("dlg-viewer");
+  var vwBack=$("viewer-back"), vwBox=$("viewer-box"), vwDl=$("viewer-dl");
+  // The email currently open in the viewer: {name,url,slug,html,atts:[{name,ctype,b64}]}.
+  var curEml=null;
+
   function openViewer(name,url,kind){
     $("viewer-title").textContent=name;
-    var dl=$("viewer-dl"); dl.href=url; dl.setAttribute("download",name); dl.style.display="";
+    vwBack.hidden=true; vwBox.hidden=true;
+    vwDl.href=url; vwDl.setAttribute("download",name); vwDl.style.display="";
     var body=$("viewer-body");
     if(kind==="image"){ body.innerHTML='<img class="full" src="'+url+'" alt="'+name+'">'; showDlg(dlgViewer); return; }
     if(kind==="eml"){
       body.innerHTML='<div class="mailview">loading…</div>';
       fetch(url).then(function(r){ if(!r.ok) throw 0; return r.text(); })
-        .then(function(t){ body.innerHTML=renderEmail(t); })
+        .then(function(t){ curEml={name:name,url:url,slug:(CH[current]||{}).slug||"01-photo-day"}; showEmail(t); })
         .catch(function(){ body.innerHTML='<div class="mailview"><div class="mail-body">Couldn’t load this message. Use Download instead.</div></div>'; });
       showDlg(dlgViewer); return;
     }
@@ -708,9 +720,50 @@ file *              # ask what each file really is</pre>
     showDlg(dlgViewer);
   }
 
-  // Render a .eml the way a mail client would: sender/subject/body + attachment
-  // chips — never the raw headers, base64, or EXIF. Recovering the hidden data
-  // is the terminal's job. Parses top-level headers + a multipart body.
+  // Paint the parsed email into the viewer and set its controls: Download (device)
+  // saves email.eml, Save-to-box copies it onto the box, each attachment chip opens.
+  function paintEmail(){
+    $("viewer-title").textContent=curEml.name;
+    $("viewer-body").innerHTML=curEml.html;
+    vwDl.href=curEml.url; vwDl.setAttribute("download",curEml.name);
+    vwBack.hidden=true;
+    vwBox.hidden=false; vwBox.textContent="⤓ Save to the box"; vwBox.onclick=saveEmailToBox;
+    Array.prototype.forEach.call($("viewer-body").querySelectorAll(".mail-att"),function(btn){
+      btn.addEventListener("click",function(){ showAttachment(+btn.dataset.att); });
+    });
+  }
+  function showEmail(raw){ var p=renderEmail(raw); curEml.html=p.html; curEml.atts=p.atts; paintEmail(); }
+
+  // Open an attachment the way a mail client would — view the photo, save it to the
+  // device (data URL) or into the challenge folder on the box.
+  function showAttachment(idx){
+    var a=(curEml&&curEml.atts||[])[idx]; if(!a) return;
+    var durl="data:"+(a.ctype||"image/jpeg")+";base64,"+a.b64;
+    $("viewer-title").textContent=a.name;
+    $("viewer-body").innerHTML='<img class="full" src="'+durl+'" alt="'+a.name+'">';
+    vwDl.href=durl; vwDl.setAttribute("download",a.name);
+    vwBack.hidden=false; vwBack.onclick=paintEmail;
+    vwBox.hidden=false; vwBox.textContent="⤓ Save to the box"; vwBox.onclick=function(){ savePhotoToBox(a.name); };
+  }
+
+  function saveEmailToBox(){
+    if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
+    var slug=(curEml&&curEml.slug)||"01-photo-day";
+    runInTerminal("ctf "+slug);
+    toast("Saved the email to ~/challenges/"+slug+" — you’re in that folder now.");
+  }
+  // Pull the attachment out of the on-box email.eml into the working dir — the same
+  // python3 extraction the writeup documents, run for the player when they "save" it.
+  function savePhotoToBox(name){
+    if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
+    var py='import email,email.policy;m=email.message_from_binary_file(open("email.eml","rb"),policy=email.policy.default);[open(p.get_filename(),"wb").write(p.get_payload(decode=True)) for p in m.walk() if p.get_content_maintype()=="image"]';
+    runInTerminal("ctf 01-photo-day >/dev/null 2>&1; python3 -c '"+py+"'; ls -l "+name);
+    toast("Saved "+name+" to ~/challenges/01-photo-day — inspect it with the terminal tools.");
+  }
+
+  // Render a .eml the way a mail client would: sender/subject/body + clickable
+  // attachment chips — never the raw headers, base64, or EXIF. Returns {html, atts}
+  // where atts=[{name,ctype,b64}]. Recovering the hidden data is the terminal's job.
   function renderEmail(raw){
     raw = raw.replace(/\r\n/g,"\n");
     var he = raw.indexOf("\n\n");
@@ -728,21 +781,22 @@ file *              # ask what each file really is</pre>
         var pct=((ph.match(/Content-Type:\s*([^;\n]+)/i)||[])[1]||"").trim().toLowerCase();
         var fn=(ph.match(/name="?([^";\n]+)"?/i)||[])[1]||"";
         if(pct.indexOf("text/plain")===0 && !fn){ bodyText += pb.replace(/\n?--\s*$/,""); }
-        else if(fn){ atts.push(fn); }
+        else if(fn){ atts.push({name:fn, ctype:pct||"application/octet-stream", b64:pb.replace(/[^A-Za-z0-9+/=]/g,"")}); }
       });
     } else { bodyText = rest; }
     function ex(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
     var h='<div class="mailview">'+
       '<div class="mail-subj">'+ex(subject||"(no subject)")+'</div>'+
       '<div class="mail-meta"><span><b>From</b> '+ex(from)+'</span><span><b>To</b> '+ex(to)+'</span>'+(date?'<span><b>Date</b> '+ex(date)+'</span>':'')+'</div>';
-    if(atts.length){ h+='<div class="mail-atts">'+atts.map(function(a){ return '<span class="mail-att">📎 '+ex(a)+'</span>'; }).join("")+'</div>'; }
+    if(atts.length){ h+='<div class="mail-atts">'+atts.map(function(a,i){ return '<button class="mail-att" data-att="'+i+'" title="Open '+ex(a.name)+'">📎 '+ex(a.name)+'</button>'; }).join("")+'</div>'; }
     h+='<div class="mail-body">'+ex(bodyText.trim()).replace(/\n/g,"<br>")+'</div>'+
-       '<div class="mail-foot">Attachments appear as they would in a mail app. To inspect one, download the challenge to the box and use the terminal tools.</div></div>';
-    return h;
+       '<div class="mail-foot">Open an attachment to view it, save it to your device, or drop it into the challenge folder on the box.</div></div>';
+    return {html:h, atts:atts};
   }
   function openWarehouse(){
     $("viewer-title").textContent="The Memory Warehouse";
     $("viewer-dl").style.display="none";
+    vwBack.hidden=true; vwBox.hidden=true;
     $("viewer-body").innerHTML='<iframe src="../warehouse-game/index.html" title="Memory Warehouse game" allow="autoplay"></iframe>';
     showDlg(dlgViewer);
   }
@@ -767,12 +821,15 @@ file *              # ask what each file really is</pre>
   // ---- Kali applications menu: browse the tools on this box ----
   function buildAppsMenu(){
     var b=$("apps-body"); b.innerHTML="";
+    var banner=document.createElement("div"); banner.className="apps-banner";
+    banner.innerHTML='<span>✓</span><span><b>Every tool you need is installed and working.</b> Browse the full Kali toolkit below.</span>';
+    b.appendChild(banner);
     KALI.forEach(function(g){
       var sec=document.createElement("div"); sec.className="apps-cat";
       sec.innerHTML='<div class="apps-cat-h">'+esc(g.cat)+'</div>';
       var grid=document.createElement("div"); grid.className="apps-grid";
       g.items.forEach(function(it){
-        var btn=document.createElement("button"); btn.className="app"+(it.on?"":" app-off");
+        var btn=document.createElement("button"); btn.className="app";
         btn.innerHTML='<span class="app-ico">▸</span><span class="app-nm">'+esc(it.name)+'</span>';
         btn.addEventListener("click",function(){ openApp(g.cat,it); });
         grid.appendChild(btn);
@@ -783,22 +840,18 @@ file *              # ask what each file really is</pre>
   var appsBuilt=false;
   $("btn-apps").addEventListener("click",function(){ if(!appsBuilt){ buildAppsMenu(); appsBuilt=true; } showDlg($("dlg-apps")); });
 
+  // Every tool renders the same card — description + "How to run" — with no hint of
+  // whether it's installed. If it isn't, they find out only when they run it, and the
+  // terminal reassures them everything required is present (see settleTerminal).
   function openApp(cat,it){
     $("app-cat").textContent=cat;
     $("app-name").textContent=it.name;
     $("app-desc").textContent=it.desc;
-    var usageEl=$("app-usage"), howto=$("app-howto"), note=$("app-note"), runBtn=$("app-run");
-    if(it.on){
-      note.style.display="none";
-      var hasUsage = !!it.usage;
-      howto.style.display = hasUsage ? "" : "none";
-      usageEl.style.display = hasUsage ? "" : "none";
-      usageEl.textContent = it.usage||"";
-      if(it.run){ runBtn.style.display=""; runBtn.onclick=function(){ closeAllDialogs(); runInTerminal(it.run); }; }
-      else { runBtn.style.display="none"; }
-    } else {
-      note.style.display=""; howto.style.display="none"; usageEl.style.display="none"; runBtn.style.display="none";
-    }
+    var usageEl=$("app-usage"), howto=$("app-howto");
+    var hasUsage = !!it.usage;
+    howto.style.display = hasUsage ? "" : "none";
+    usageEl.style.display = hasUsage ? "" : "none";
+    usageEl.textContent = it.usage||"";
     showDlg($("dlg-app"));
   }
 
@@ -955,7 +1008,11 @@ file *              # ask what each file really is</pre>
       try{ fit.fit(); }catch(e){}
       // bash caches the hostname for \h at startup, so renaming the host won't
       // update this shell's prompt — set PS1 explicitly to finish the rebrand.
-      emulator.serial0_send(" stty rows "+term.rows+" cols "+term.cols+" 2>/dev/null; hostname chiral-lab 2>/dev/null; export PS1='root@chiral-lab:\\w# '\n");
+      // Also define a friendly not-found handler: the Applications menu never says
+      // which tools are installed, so if you run one that isn't, the box tells you
+      // here — and reassures you everything the challenges need is present. (ASCII
+      // only; the serial console is not UTF-8.)
+      emulator.serial0_send(" stty rows "+term.rows+" cols "+term.cols+" 2>/dev/null; hostname chiral-lab 2>/dev/null; export PS1='root@chiral-lab:\\w# '; command_not_found_handle(){ echo \"$1: not installed on this box. All tools required to finish the challenges are installed and working.\"; return 127; }\n");
       setTimeout(function(){
         try{
           term.write("\x1b[2J\x1b[3J\x1b[H");
