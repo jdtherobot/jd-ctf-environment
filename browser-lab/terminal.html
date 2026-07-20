@@ -99,11 +99,9 @@
         <li>wordlist.txt <span>— cracking</span></li>
         <li>BRIEF-*.md <span>— tasks</span></li>
       </ul>
-      <p>On the lab image these sit in <code>~/challenges</code>. C3 (the Memory Warehouse) is solved with the companion game, not a file.</p>
-      <h4>Quick start</h4>
-      <p><code>cd ~/challenges</code><br>
-      <code>exiftool stego_badger.jpeg</code><br>
-      <code>binwalk Honey.jpeg</code></p>
+      <p>These sit in <code>~/challenges</code>. Start by reading a briefing: <code>cat BRIEF-01-photo-day.md</code>. C3 (the Memory Warehouse) is solved with the companion game, not a file.</p>
+      <h4>Stuck?</h4>
+      <p>The <a href="workbench.html">Guided Workbench</a> has the briefings side-by-side with this terminal, plus nudges and — when you ask for it — the toolbox.</p>
       <h4>Controls</h4>
       <p><kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts. Paste with your OS shortcut. <b>Save snapshot</b> persists the whole box to this browser; <b>Reset</b> throws the snapshot away and reboots clean.</p>
     </aside>
@@ -151,11 +149,11 @@
       kind: "9p-filesystem",
       baseurl: "./image/dist/flat",
       basefs:  "./image/dist/fs.json",
-      cmdline: "rw root=host9p rootfstype=9p rootflags=trans=virtio,cache=loose modules=virtio_pci tsc=reliable",
+      cmdline: "console=ttyS0 init=/sbin/lab-init rw root=host9p rootfstype=9p rootflags=trans=virtio,cache=loose modules=virtio_pci tsc=reliable",
       hasToolkit: true,
     },
   };
-  var ACTIVE = "base";   // <-- switch to "lab" when ./image/dist is deployed
+  var ACTIVE = "lab";    // boots the full-toolkit lab image from ./image/dist
   var img = IMAGES[ACTIVE];
 
   var STATE_DB = "badgerlab-state", STATE_KEY = "v86-snapshot";

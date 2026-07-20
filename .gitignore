@@ -10,8 +10,10 @@
 # --- Browser-lab build artifacts ---
 browser-lab/build/
 browser-lab/dist/
-browser-lab/image/dist/         # generated fs.json / flat/ / rootfs.tar
-browser-lab/image/payload/      # staged player files copied in at image-build time
+# generated fs.json / flat/ / rootfs.tar (inline comments are NOT allowed in .gitignore)
+browser-lab/image/dist/
+# staged player files copied in at image-build time
+browser-lab/image/payload/
 # (browser-lab/vendor/* — the ~9.6MB vendored kernel blob — is ignored by browser-lab/vendor/.gitignore)
 
 # --- Wordlists (full lists only; build/wordlists/trimmed.txt IS shipped) ---
