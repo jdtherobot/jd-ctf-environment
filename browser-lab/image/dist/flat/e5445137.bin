@@ -1,0 +1,16 @@
+/.
+/etc
+/etc/foremost.conf
+/usr
+/usr/bin
+/usr/bin/foremost
+/usr/share
+/usr/share/doc
+/usr/share/doc/foremost
+/usr/share/doc/foremost/README.gz
+/usr/share/doc/foremost/changelog.Debian.gz
+/usr/share/doc/foremost/changelog.gz
+/usr/share/doc/foremost/copyright
+/usr/share/man
+/usr/share/man/man8
+/usr/share/man/man8/foremost.8.gz

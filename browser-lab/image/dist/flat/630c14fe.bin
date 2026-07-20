@@ -1,0 +1,17 @@
+/.
+/etc
+/etc/scalpel
+/etc/scalpel/scalpel.conf
+/usr
+/usr/bin
+/usr/bin/scalpel
+/usr/share
+/usr/share/doc
+/usr/share/doc/scalpel
+/usr/share/doc/scalpel/README
+/usr/share/doc/scalpel/changelog.Debian.gz
+/usr/share/doc/scalpel/changelog.gz
+/usr/share/doc/scalpel/copyright
+/usr/share/man
+/usr/share/man/man1
+/usr/share/man/man1/scalpel.1.gz

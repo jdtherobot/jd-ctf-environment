@@ -1,0 +1,15 @@
+/.
+/usr
+/usr/lib
+/usr/lib/i386-linux-gnu
+/usr/lib/i386-linux-gnu/gprofng
+/usr/lib/i386-linux-gnu/gprofng/libgp-collector.so
+/usr/lib/i386-linux-gnu/gprofng/libgp-collectorAPI.so
+/usr/lib/i386-linux-gnu/gprofng/libgp-heap.so
+/usr/lib/i386-linux-gnu/gprofng/libgp-iotrace.so
+/usr/lib/i386-linux-gnu/gprofng/libgp-sync.so
+/usr/lib/i386-linux-gnu/libgprofng.so.0.0.0
+/usr/share
+/usr/share/doc
+/usr/lib/i386-linux-gnu/libgprofng.so.0
+/usr/share/doc/libgprofng0

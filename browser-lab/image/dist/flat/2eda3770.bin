@@ -1,0 +1,9 @@
+f41626cc7e93ed490800cc70b9d07a05  usr/bin/fcrackzip
+885bab3147c5ebc4808b40c2671ebdc9  usr/bin/fcrackzipinfo
+a2b746d8854fe72f9f4082b4ddffe086  usr/share/doc/fcrackzip/README
+cb7ca42c1ed856a64075821e08a40ca2  usr/share/doc/fcrackzip/changelog.Debian.gz
+736ba63fb5577858053b11fba20cd6d1  usr/share/doc/fcrackzip/changelog.gz
+c7a5457cd35fb749f03efe0df59c5ac9  usr/share/doc/fcrackzip/copyright
+3a5bab18dc3540088780973ecc7633da  usr/share/doc/fcrackzip/examples/noradi.zip
+ce8ec46df00dc27cfadb4f8819cae085  usr/share/man/man1/fcrackzip.1.gz
+9ac81235037cbedbfa3fee30add41426  usr/share/man/man1/fcrackzipinfo.1.gz

@@ -1,0 +1,10 @@
+b28d38bc8347fd39fb5fa56996e0e39e  usr/bin/png-fix-IDAT-windowsize
+7314b682fa8c96924e32e2d37216a603  usr/bin/pngcheck
+0e7dcb5391f1631d32a70a0e50d43ece  usr/bin/pngsplit
+b6744abbdcb156dbb5dd9f5b017a2720  usr/share/doc/pngcheck/README.gz
+fe9fe550d4ccf319dd49da5b5b8073c5  usr/share/doc/pngcheck/changelog.Debian.gz
+7ce3dcab953873a0853af68f24925fbe  usr/share/doc/pngcheck/changelog.gz
+d01ba84044751085487e5ee9aa48e22f  usr/share/doc/pngcheck/copyright
+fb50dd536cb51b0cb9b466fcf36df1ae  usr/share/man/man1/png-fix-IDAT-windowsize.1.gz
+07e92cb9832a96d09989f0e72deb9f1a  usr/share/man/man1/pngcheck.1.gz
+41cde115a9b7688d1558eb0b0aee2939  usr/share/man/man1/pngsplit.1.gz

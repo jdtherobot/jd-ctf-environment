@@ -1,0 +1,11 @@
+59436c8e1b32e84a37cd5bb3f3846852  usr/bin/histogram
+7f0993a6a9615af3f7dc84e5a680a307  usr/bin/outguess
+74ea0cc79fb165b0d887cf2771bfd62e  usr/bin/seek_script
+8b50663e13fb4eef6a2412e5dac8e318  usr/share/doc/outguess/NEWS.gz
+35eff86d461aad85eff0bd107c8d0655  usr/share/doc/outguess/README.md.gz
+d5cd92508ce9df67b62908076c9506cb  usr/share/doc/outguess/STIRMARK-README.gz
+75d5925e17b47d3960a7109477a4dcb6  usr/share/doc/outguess/changelog.Debian.gz
+eb0d71b9f47871bf5d19daa6e9d2ab6c  usr/share/doc/outguess/changelog.gz
+74a48b0c5a3955503e58d7c8e70c8d6f  usr/share/doc/outguess/copyright
+447f72e40a1b8bcbe541db2b4071a7ad  usr/share/man/man1/outguess.1.gz
+66bc9b9821de779848290c87999e1e3a  usr/share/man/man1/seek_script.1.gz

@@ -1,0 +1,13 @@
+/.
+/etc
+/etc/firebird
+/etc/firebird/3.0
+/etc/firebird/3.0/fbintl.conf
+/etc/firebird/3.0/firebird.conf
+/etc/firebird/3.0/plugins.conf
+/usr
+/usr/share
+/usr/share/doc
+/usr/share/firebird3.0-common
+/usr/share/firebird3.0-common/functions.sh
+/usr/share/doc/firebird3.0-common

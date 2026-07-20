@@ -1,0 +1,13 @@
+/.
+/usr
+/usr/bin
+/usr/bin/ent
+/usr/share
+/usr/share/doc
+/usr/share/doc/ent
+/usr/share/doc/ent/changelog.Debian.gz
+/usr/share/doc/ent/changelog.gz
+/usr/share/doc/ent/copyright
+/usr/share/man
+/usr/share/man/man1
+/usr/share/man/man1/ent.1.gz

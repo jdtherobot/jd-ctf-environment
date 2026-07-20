@@ -1,0 +1,12 @@
+/.
+/usr
+/usr/share
+/usr/share/doc
+/usr/share/doc/firebird3.0-common-doc
+/usr/share/doc/firebird3.0-common-doc/README.Debian
+/usr/share/doc/firebird3.0-common-doc/changelog.Debian.gz
+/usr/share/doc/firebird3.0-common-doc/changelog.gz
+/usr/share/doc/firebird3.0-common-doc/copyright
+/usr/share/lintian
+/usr/share/lintian/overrides
+/usr/share/lintian/overrides/firebird3.0-common-doc

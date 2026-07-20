@@ -1,0 +1,14 @@
+/.
+/usr
+/usr/lib
+/usr/lib/i386-linux-gnu
+/usr/lib/i386-linux-gnu/libkms_message.so.0.0.0
+/usr/lib/i386-linux-gnu/libmongocrypt.so.0.0.0
+/usr/share
+/usr/share/doc
+/usr/share/doc/libmongocrypt0
+/usr/share/doc/libmongocrypt0/changelog.Debian.gz
+/usr/share/doc/libmongocrypt0/changelog.gz
+/usr/share/doc/libmongocrypt0/copyright
+/usr/lib/i386-linux-gnu/libkms_message.so.0
+/usr/lib/i386-linux-gnu/libmongocrypt.so.0
