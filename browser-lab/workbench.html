@@ -3,21 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Badger Lab — Guided Workbench</title>
+<title>Chiral Lab — Guided Workbench</title>
 
 <!-- Engine + terminal renderer from their public distributions (v86: BSD-2; xterm.js: MIT),
      pinned by version/commit. Nothing proprietary is vendored. The markdown renderer and all
      UI are inline so the page itself has no third-party dependency and cannot fail to render
      the briefs, even if the emulator can't load. -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<link rel="stylesheet" href="../assets/site-theme.css">
+<link rel="stylesheet" href="../assets/site-chrome.css">
+<script defer src="../assets/site-chrome.js"></script>
 <style>
-  :root{
-    --bg:#0a0d0b; --panel:#111613; --panel-2:#0e1310; --ink:#d7e2d5; --ink-dim:#8fa38c;
-    --line:#20302a; --line-soft:#182420; --accent:#5ef2a0; --accent-2:#f2c14e; --danger:#ff7a7a;
-    --shadow:0 16px 50px rgba(0,0,0,.5);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-    --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  }
+  /* chrome themes with the site; the TTY screen stays black. Orthogonal system:
+     square corners, no shadows. */
+  :root{ --shadow:none; }
+  .tab,.tb,.file,.tool,.btn,.menu-pop,dialog,.failcard,.warehouse-cta,.btn-warehouse{ border-radius:0 !important; }
+  .bar,.toolbox{ background:var(--panel) !important; }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;flex-direction:column;
@@ -196,12 +197,8 @@
 <body>
   <div class="bar">
     <span class="brand">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="1.5" y="4" width="21" height="16" rx="3" stroke="var(--accent)" stroke-width="1.6"/>
-        <path d="M6 9l3 3-3 3" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12.5 15H17" stroke="var(--accent-2)" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      <span><span class="dot" id="statusdot"></span> badger&nbsp;lab</span>
+      <span style="font-family:var(--mono);font-size:17px;color:var(--gold);font-weight:500">&gt;_</span>
+      <span><span class="dot" id="statusdot"></span> chiral&nbsp;lab</span>
     </span>
     <nav class="tabs" id="tabs" aria-label="Challenges"></nav>
     <span class="spacer"></span>
@@ -360,7 +357,7 @@ file *              # ask what each file really is</pre>
     { run:"python3 FILE.py",                                   desc:"Run a helper script (e.g. one you recover mid-challenge)." }
   ];
 
-  var TOOLBOX_KEY = "badgerlab-toolbox-open";
+  var TOOLBOX_KEY = "chirallab-toolbox-open";
 
   // =========================================================================
   //  Tiny, dependency-free Markdown -> HTML (enough for the briefs: headings,
@@ -552,7 +549,7 @@ file *              # ask what each file really is</pre>
   // be reached/booted, the fallback card offers Terminal-only, Retry, and Static mode.
   var IMG={ baseurl:"./image/dist/flat", basefs:"./image/dist/fs.json",
             cmdline:"console=ttyS0 init=/sbin/lab-init rw root=host9p rootfstype=9p rootflags=trans=virtio,cache=loose modules=virtio_pci tsc=reliable mitigations=off" };
-  var STATE_DB="badgerlab-state", STATE_KEY="v86-snapshot";
+  var STATE_DB="chirallab-state", STATE_KEY="v86-snapshot";
 
   var bootlog=$("bootlog"), bootbar=$("bootbar"), statusEl=$("status"), dot=$("statusdot"), banner=$("work-banner");
   var logLines=[], progress=0;
@@ -597,7 +594,7 @@ file *              # ask what each file really is</pre>
       bootFailed("The terminal engine couldn’t load from the CDN. Check your connection, then try again."); return;
     }
     term=new Terminal({ convertEol:false, cursorBlink:true, fontFamily:"var(--mono)", fontSize:14,
-      theme:{ background:"#000000", foreground:"#d7e2d5", cursor:"#5ef2a0", green:"#5ef2a0", brightGreen:"#7dffb8", yellow:"#f2c14e" },
+      theme:{ background:"#000000", foreground:"#ece2c6", cursor:"#c9a45e", green:"#c9a45e", brightGreen:"#e2c88a", yellow:"#c9a45e" },
       scrollback:5000 });
     fit=new FitAddon.FitAddon(); term.loadAddon(fit); term.open($("terminal"));
     try{ fit.fit(); }catch(e){}
@@ -623,7 +620,7 @@ file *              # ask what each file really is</pre>
       bios:{url:CDN.seabios}, vga_bios:{url:CDN.vgabios}, cmdline:IMG.cmdline, autostart:true,
       disable_keyboard:true, disable_speaker:true,
       filesystem:{ baseurl:IMG.baseurl, basefs:IMG.basefs }, bzimage_initrd_from_filesystem:true };
-    blog("engine: v86 (wasm)  ·  image: badger lab (32-bit Debian + toolkit)");
+    blog("engine: v86 (wasm)  ·  image: chiral lab (32-bit Debian + toolkit)");
     blog("fetching bios + kernel…"); setBar(8); setStatus("booting…");
     try{ emulator=new V86(cfg); }catch(err){ bootFailed("Boot failed: "+err); return; }
     window._emulator=emulator;

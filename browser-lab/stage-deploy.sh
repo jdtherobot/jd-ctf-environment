@@ -31,6 +31,11 @@ rm -rf "$DEST"; mkdir -p "$DEST/browser-lab"
 # 1) root landing
 cp "$REPO_ROOT/index.html" "$DEST/index.html"
 
+# 1b) shared site chrome — britt.gg banner, theme tokens, Chiral Lab header.
+# Every page links these (root via assets/, subdirs via ../assets/), so the
+# single copy at the bundle root resolves for all of them.
+cp -r "$REPO_ROOT/assets" "$DEST/assets"
+
 # 2) warehouse game — self-contained single file (README is a doc, not shipped)
 mkdir -p "$DEST/warehouse-game"
 cp "$REPO_ROOT/warehouse-game/index.html" "$DEST/warehouse-game/index.html"

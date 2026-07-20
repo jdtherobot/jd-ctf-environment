@@ -1,120 +1,135 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-mode="day">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Steganography CTF — Challenges</title>
+<title>Chiral Lab — Steganography CTF</title>
+<link rel="stylesheet" href="assets/site-theme.css">
+<link rel="stylesheet" href="assets/site-chrome.css">
+<link rel="stylesheet" href="assets/lab-header.css">
 <style>
-  :root{
-    --bg:#0c0f0d; --panel:#121714; --panel-2:#0e1310; --ink:#d7e2d5; --ink-dim:#8fa38c;
-    --line:#222e26; --accent:#5ef2a0; --accent-2:#f2c14e;
-    --shadow:0 12px 40px rgba(0,0,0,.45);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-    --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    transition: background .3s, color .3s;
   }
-  @media (prefers-color-scheme: light){
-    :root{ --bg:#eef2ee; --panel:#ffffff; --panel-2:#f4f7f4; --ink:#152018; --ink-dim:#54685a;
-      --line:#d6e0d6; --accent:#0a8f52; --accent-2:#9a6b00; --shadow:0 12px 40px rgba(20,40,25,.12); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 72px; }
+  a { color: var(--accent); }
+
+  .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--ink-dim); margin: 40px 0 14px;
   }
-  :root[data-theme="dark"]{ --bg:#0c0f0d; --panel:#121714; --panel-2:#0e1310; --ink:#d7e2d5; --ink-dim:#8fa38c;
-    --line:#222e26; --accent:#5ef2a0; --accent-2:#f2c14e; --shadow:0 12px 40px rgba(0,0,0,.45); }
-  :root[data-theme="light"]{ --bg:#eef2ee; --panel:#ffffff; --panel-2:#f4f7f4; --ink:#152018; --ink-dim:#54685a;
-    --line:#d6e0d6; --accent:#0a8f52; --accent-2:#9a6b00; --shadow:0 12px 40px rgba(20,40,25,.12); }
-
-  *{box-sizing:border-box}
-  html,body{margin:0}
-  body{
-    background:
-      radial-gradient(1200px 600px at 80% -10%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%),
-      var(--bg);
-    color:var(--ink); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased; min-height:100vh;
+  .lede {
+    font-family: var(--sans); font-size: clamp(15px, 1.8vw, 17px);
+    color: var(--ink-dim); max-width: 62ch; margin: 0;
   }
-  .wrap{max-width:860px; margin:0 auto; padding:44px 20px 64px}
-  a{color:var(--accent)}
-  .kicker{font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin:0 0 12px}
-  h1{font-size:clamp(30px,5vw,46px); line-height:1.06; margin:0 0 14px; letter-spacing:-.01em}
-  h1 .thin{color:var(--ink-dim); font-weight:500}
-  .lede{font-size:clamp(15px,1.8vw,18px); color:var(--ink-dim); max-width:60ch; margin:0 0 4px}
 
-  .brand{display:flex; align-items:center; gap:12px; font-family:var(--mono); font-weight:600; margin-bottom:26px}
+  /* the two surfaces — square, hairline, no shadow (orthogonal system) */
+  .surfaces { display: grid; grid-template-columns: 1.35fr .65fr; gap: 16px; margin: 34px 0 0; }
+  @media (max-width: 720px) { .surfaces { grid-template-columns: 1fr; } }
+  .surface {
+    position: relative; border: 1px solid var(--edge); background: var(--panel);
+    padding: 24px; display: flex; flex-direction: column;
+  }
+  .surface__tag {
+    position: absolute; top: 14px; right: 16px; font-family: var(--mono);
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+  }
+  .surface h2 {
+    font-family: var(--display); font-weight: 600; text-transform: uppercase;
+    letter-spacing: .02em; font-size: 20px; margin: 0 0 8px;
+  }
+  .surface p { margin: 0 0 18px; color: var(--ink-dim); font-size: 14px; }
+  .surface .btnrow { margin-top: auto; }
 
-  .primary{margin:30px 0 14px; background:linear-gradient(180deg, var(--panel), var(--panel-2));
-    border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line)); border-radius:18px; padding:24px; box-shadow:var(--shadow)}
-  .primary h2{margin:0 0 6px; font-size:22px; display:flex; align-items:center; gap:10px}
-  .primary p{margin:0 0 18px; color:var(--ink-dim); font-size:14.5px; max-width:56ch}
-  .btn{display:inline-flex; align-items:center; gap:9px; font:600 15px/1 var(--sans);
-    padding:14px 20px; border-radius:11px; border:1px solid transparent; cursor:pointer; text-decoration:none; transition:box-shadow .15s}
-  .btn-primary{background:var(--accent); color:#04160c; box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 30%,transparent)}
-  .btn-primary:hover{box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 42%,transparent)}
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono);
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase; line-height: 1;
+    padding: 12px 20px; border: 1px solid; cursor: pointer; text-decoration: none;
+    transition: opacity .18s, background .18s, color .18s;
+  }
+  .btn:hover { opacity: .88; }
+  .btn-primary { background: var(--gold); color: var(--carbon); border-color: var(--gold); }
+  .btn-ghost { background: transparent; color: var(--ink-dim); border-color: var(--ink-dim); }
+  .btn-ghost:hover { background: var(--ink-dim); color: var(--bg); opacity: 1; }
 
-  .alt{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px}
-  @media (max-width:640px){ .alt{grid-template-columns:1fr} }
-  .altcard{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; text-decoration:none; color:inherit; display:block; transition:border-color .15s}
-  .altcard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-  .altcard .t{font-weight:600; font-size:16px; display:flex; align-items:center; gap:9px}
-  .altcard .s{font-size:13px; color:var(--ink-dim); margin-top:5px}
+  .missions { margin-top: 40px; }
+  .missions h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-dim); margin: 0 0 14px;
+  }
+  .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 720px) { .mgrid { grid-template-columns: 1fr; } }
+  .m { display: flex; gap: 14px; align-items: flex-start; border: 1px solid var(--edge); padding: 14px 16px; }
+  .m .num { font-family: var(--mono); font-weight: 500; color: var(--accent); min-width: 26px; }
+  .m .t { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; font-size: 14px; }
+  .m .s { font-size: 12.5px; color: var(--ink-dim); margin-top: 3px; }
 
-  footer{margin-top:40px; border-top:1px solid var(--line); padding-top:18px; color:var(--ink-dim); font-size:12.5px;
-    display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; align-items:center}
-  footer a{color:var(--ink-dim); text-decoration:underline}
-  .themebtn{font:600 12px/1 var(--mono); color:var(--ink-dim); background:transparent; border:1px solid var(--line);
-    border-radius:8px; padding:7px 10px; cursor:pointer}
+  footer {
+    margin-top: 48px; border-top: 1px solid var(--edge); padding-top: 20px;
+    color: var(--ink-dim); font-size: 12px; font-family: var(--mono); letter-spacing: .04em;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="brand">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="1.5" y="4" width="21" height="16" rx="3" stroke="var(--accent)" stroke-width="1.6"/>
-      <path d="M6 9l3 3-3 3" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12.5 15H17" stroke="var(--accent-2)" stroke-width="1.6" stroke-linecap="round"/>
-    </svg>
-    <span>badger&nbsp;lab</span>
-  </div>
+
+  <header class="lab-header" tabindex="-1">
+    <span class="lab-header__corner lab-header__corner--tl"></span>
+    <span class="lab-header__corner lab-header__corner--br"></span>
+    <div class="lab-header__meta">
+      <span>SYS.02 // BRITT.GG</span>
+      <span>NODE: HANDSHAKE</span>
+    </div>
+    <div class="lab-header__prompt">
+      <span class="lab-header__glyph">&gt;_</span>
+      <span class="lab-header__name">Chiral Lab</span>
+    </div>
+    <div class="lab-header__rule"></div>
+    <p class="lab-header__status">isolated node linked to network &mdash; <span class="accent">connection open</span></p>
+  </header>
 
   <p class="kicker">Steganography CTF</p>
-  <h1>Launch the challenges <span class="thin">— everything runs in your browser.</span></h1>
-  <p class="lede">Four steganography challenges with their briefings and files, plus a real 32-bit Linux
-  computer that boots right on this page. Nothing to install; nothing leaves your machine.</p>
+  <p class="lede">Four steganography challenges with their briefings and files, plus a real 32-bit
+  Linux computer that boots right on this page. Nothing to install; nothing leaves your machine.</p>
 
-  <div class="primary">
-    <h2>🧭 Guided Workbench</h2>
-    <p>The full experience: pick a challenge, read the briefing, open its files, and work in the terminal
-    beside it. A built-in facilitator gives nudges and — when you ask — reveals the toolbox. Start here.</p>
-    <a class="btn btn-primary" href="browser-lab/workbench.html">Open the workbench →</a>
+  <div class="surfaces">
+    <div class="surface">
+      <span class="surface__tag">Start here</span>
+      <h2>Guided Workbench</h2>
+      <p>Pick a challenge, read the briefing, open its files, and work in the terminal beside it. A
+      built-in facilitator gives nudges and — when you ask — reveals the toolbox.</p>
+      <div class="btnrow"><a class="btn btn-primary" href="browser-lab/workbench.html">Open the workbench →</a></div>
+    </div>
+    <div class="surface">
+      <h2>Terminal only</h2>
+      <p>Just the shell, with your files on it — for people who already live in the command line.</p>
+      <div class="btnrow"><a class="btn btn-ghost" href="browser-lab/terminal.html">Open the terminal →</a></div>
+    </div>
   </div>
 
-  <div class="alt">
-    <a class="altcard" href="browser-lab/terminal.html">
-      <div class="t">⌨️ Terminal only</div>
-      <div class="s">Just the shell, with your files on it — for people who already live in the command line.</div>
-    </a>
-    <a class="altcard" href="warehouse-game/">
-      <div class="t">📦 The Memory Warehouse</div>
-      <div class="s">Challenge 3’s companion game as a standalone. (It’s also built into the workbench.)</div>
-    </a>
+  <div class="missions">
+    <h3>The four challenges</h3>
+    <div class="mgrid">
+      <div class="m"><div class="num">01</div><div><div class="t">Photo Day</div><div class="s">An intercepted email hides more than small talk.</div></div></div>
+      <div class="m"><div class="num">02</div><div><div class="t">Stegosaurus 1</div><div class="s">Something is stashed inside the pixels.</div></div></div>
+      <div class="m"><div class="num">03</div><div><div class="t">The Memory Warehouse</div><div class="s">A page-table walk to one physical box — played in the warehouse.</div></div></div>
+      <div class="m"><div class="num">04</div><div><div class="t">Stegosaurus 3</div><div class="s">Many files stacked as one; peel every layer.</div></div></div>
+    </div>
   </div>
 
   <footer>
-    <span>Academic / event use. Challenge files are the sanitized player distribution — no answers baked in.</span>
-    <span style="display:flex;gap:12px;align-items:center">
-      <button class="themebtn" id="themebtn">◐ theme</button>
-    </span>
+    Academic / event use. Challenge files are the sanitized player distribution — no answers baked in.
   </footer>
 </div>
 
-<script>
-  (function(){
-    var root=document.documentElement, key="badgerlab-theme";
-    try{ var s=localStorage.getItem(key); if(s) root.setAttribute("data-theme",s); }catch(e){}
-    document.getElementById("themebtn").addEventListener("click",function(){
-      var cur=root.getAttribute("data-theme");
-      var next = cur==="light" ? "dark" : (cur==="dark" ? "light"
-                 : (matchMedia("(prefers-color-scheme: dark)").matches?"light":"dark"));
-      root.setAttribute("data-theme",next);
-      try{ localStorage.setItem(key,next); }catch(e){}
-    });
-  })();
-</script>
+<script defer src="assets/site-chrome.js"></script>
 </body>
 </html>
