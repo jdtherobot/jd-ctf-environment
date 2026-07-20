@@ -125,8 +125,7 @@
 "use strict";
 (function(){
   // Chiral banner painted after boot (ASCII only — the serial console isn't UTF-8).
-  // The disk image still boots as "badger-lab" until rebuilt; settleTerminal()
-  // renames the host and repaints this over the old banner.
+  // settleTerminal() renames the host and repaints this over the boot banner.
   var CHIRAL_BANNER=[
     "  ____ _   _ ___ ____      _    _",
     " / ___| | | |_ _|  _ \\    / \\  | |",
@@ -135,8 +134,8 @@
     " \\____|_| |_|___|_| \\_\\ /_/   \\_\\_____|",
     "           32-bit forensics workbench",
     "",
-    "Chiral Lab - your challenge files are in ~/challenges.",
-    "Read a briefing to begin:  cat BRIEF-01-photo-day.md"
+    "Chiral Lab - the box starts empty.",
+    "Load a challenge with:  ctf 1   (or 2, 4)"
   ];
   // ---------------------------------------------------------------------------
   // CONFIG — where the engine + images come from.
