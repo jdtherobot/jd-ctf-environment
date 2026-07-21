@@ -123,3 +123,34 @@
     padding: 0 18px;
   }
 }
+
+/* "Read the writeups" — the standard gold link button, sitting beside the
+   Chiral Lab logo on every lab page. Matches the main site's primary button
+   (gold fill, dark ink, mono caps), squared to the lab's corner system. */
+.writeups-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 10px 18px;
+  border: 1px solid var(--gold);
+  border-radius: 0;
+  background: var(--gold);
+  color: #17161a;
+  transition: opacity 0.18s;
+}
+.writeups-btn:hover {
+  opacity: 0.88;
+  color: #17161a;
+}
+.writeups-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
