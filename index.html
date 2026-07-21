@@ -23,19 +23,12 @@
 
   /* the lab logo — a real mark (chiral chevrons in a terminal frame) + wordmark,
      sitting just under the site banner */
-  .lab-logo { display: flex; align-items: center; gap: 12px; margin: 22px 0 0; }
+  .lab-logo { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 22px 0 0; }
   .chiral-mark { width: 30px; height: 30px; color: var(--gold); flex: none; }
   .lab-logo__name {
     font-family: var(--display); font-weight: 700; font-size: 22px;
     letter-spacing: .12em; text-transform: uppercase; color: var(--text);
   }
-  .writeups-link {
-    display: inline-flex; align-items: center; gap: 7px; margin: 12px 0 0; width: fit-content;
-    font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--gold-hair); padding-bottom: 2px;
-    transition: color .18s, border-color .18s;
-  }
-  .writeups-link:hover { color: var(--text); border-bottom-color: var(--gold); }
 
   .kicker {
     font-family: var(--mono); font-size: 11px; letter-spacing: .18em;
@@ -103,8 +96,8 @@
       <path d="M17 17 L13 14 L17 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span class="lab-logo__name">Chiral Lab</span>
+    <a class="writeups-btn" href="https://britt.gg/projects/steganography-ctf/overview">Read the writeups →</a>
   </div>
-  <a class="writeups-link" href="https://britt.gg/projects/steganography-ctf/overview">Read the writeups →</a>
 
   <p class="kicker">Steganography CTF</p>
   <p class="lede">Four steganography challenges with their briefings and files, plus a real 32-bit
