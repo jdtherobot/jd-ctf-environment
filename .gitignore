@@ -21,6 +21,9 @@ rockyou.txt
 rockyou*.txt
 *.wordlist
 wordlists/full/
+# ship the trimmed rockyou served by the lab's Applications -> Wordlists menu
+# (8.5 KB, not the full ~133 MB list) — exempt this one path from the rules above
+!browser-lab/wordlists/rockyou.txt
 
 # --- Build scratch (stage-deploy.sh default dest: build/scratch/lab/deploy) ---
 build/scratch/

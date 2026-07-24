@@ -33,7 +33,8 @@ cp "$REPO_ROOT/participant/challenges/01-steganography-lvl-1/email.eml"         
 cp "$REPO_ROOT/participant/challenges/02-steganography-lvl-2/stego_badger.jpeg"     "$PAY/opt/ctf/02-steganography-lvl-2/stego_badger.jpeg"
 cp "$REPO_ROOT/build/wordlists/trimmed.txt"                                         "$PAY/opt/ctf/02-steganography-lvl-2/wordlist.txt"
 cp "$REPO_ROOT/participant/challenges/03-steganography-lvl-3/Honey.jpeg"            "$PAY/opt/ctf/03-steganography-lvl-3/Honey.jpeg"
-cp "$REPO_ROOT/build/wordlists/trimmed.txt"                                         "$PAY/opt/ctf/03-steganography-lvl-3/wordlist.txt"
+# lvl 3's outer password is spelled out in its brief — it is NOT a wordlist crack, so
+# no wordlist is staged for it (a bundled list made it too easy). lvl 2 still ships one.
 find "$PAY" -type f | sort
 
 echo "== 2) secret-scan the payload (must PASS before it goes in an image) =="
