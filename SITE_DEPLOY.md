@@ -4,14 +4,40 @@ This repo is what the **"Launch challenges"** button on
 [britt.gg](https://github.com/jdtherobot/jdtherobot.github.io) should open: the in-browser Linux lab
 and the warehouse game. This guide takes it from "in the repo" to "live on the site."
 
-> **Status (live):** the environment ships from an **orphan `gh-pages` branch** built by
+> **Status (live):** the environment ships from a **`gh-pages` branch** built by
 > `browser-lab/stage-deploy.sh` (bundle = root `index.html` + `warehouse-game/` + `browser-lab/` with
-> the built `image/dist/`), so `main` stays free of the ~460 MB image. The primary entry is the
+> the built `image/dist/`), so `main` stays free of the ~760 MB image. The primary entry is the
 > **Guided Workbench** (`browser-lab/workbench.html`): challenge picker, verbatim briefs, the files,
 > the live 32-bit Linux terminal, and a facilitator Help menu (nudges + a hidden-until-asked toolbox).
 > The lab image is Debian **bookworm** i386 booted root-over-9p in v86 via a custom `init=/sbin/lab-init`
-> (see `browser-lab/image/README.md`). To re-deploy: rebuild the image, run `stage-deploy.sh`, and push
-> the bundle to `gh-pages`. The manual steps below remain valid for a from-scratch setup.
+> (see `browser-lab/image/README.md`). The manual steps below remain valid for a from-scratch setup.
+
+### Re-deploying `gh-pages` (the exact commands)
+
+`gh-pages` history is **incremental** (each deploy is a normal commit on the previous tip — never
+re-orphan, never force-push). The image lives only on this branch, so publish from a throwaway clone
+that never downloads the old image blobs:
+
+```bash
+# 1) rebuild the image if challenge files changed, then stage + gate the bundle
+bash browser-lab/image/build-image.sh          # only if image inputs changed
+bash browser-lab/stage-deploy.sh               # strips .DS_Store, size gate, secret-scan (must PASS)
+BUNDLE="$PWD/build/scratch/lab/deploy"
+
+# 2) build a deploy commit onto the current gh-pages tip WITHOUT fetching its blobs
+GHP="$(mktemp -d)"; git init -q "$GHP"; cd "$GHP"
+git remote add origin https://github.com/jdtherobot/jd-ctf-environment.git
+git fetch -q --depth=1 --filter=blob:none origin gh-pages   # commits + trees only
+find "$BUNDLE" -name .DS_Store -delete
+git --work-tree="$BUNDLE" add -A
+C=$(git commit-tree "$(git write-tree)" -p FETCH_HEAD -m "Deploy: <what changed>")
+git push origin "$C:refs/heads/gh-pages"        # normal push, NOT forced
+```
+
+Never `git checkout`/`git status` inside that clone — with `--filter=blob:none` those would fault-in
+the whole old image. Unchanged image blobs are content-addressed, so a UI-only deploy dedupes and
+pushes only the changed HTML. Confirm with `gh api repos/jdtherobot/jd-ctf-environment/pages/builds/latest`
+(`status:"built"`).
 
 britt.gg is served by the `jdtherobot.github.io` Pages site (user pages + `CNAME`). A separate repo
 published with GitHub Pages lands at a **project-pages subpath under the same domain** —
