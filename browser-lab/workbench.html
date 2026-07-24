@@ -722,16 +722,15 @@ file *              # ask what each file really is</pre>
   function renderEvidence(c){
     var e=$("evidence");
     if(c.warehouse){
+      // Challenge 4 auto-opens the sim on the right the moment it's selected (see
+      // select()), so this is always the "already open" state and the button reloads.
       e.innerHTML =
         '<h4>The warehouse</h4>'+
         '<div class="warehouse-cta">'+
-        (whLoaded
-          ? '<p>The warehouse is open on the right, where the terminal usually is. Wrong box: nothing there. Right box: bring back what’s inside.</p>'+
-            '<button class="btn-warehouse" id="btn-warehouse">↻ Reload the warehouse</button>'
-          : '<p>Challenge 4 isn’t in a file — it’s a place. Resolve the address, then walk the floor to your box — the floor opens right here, in the terminal pane.</p>'+
-            '<button class="btn-warehouse" id="btn-warehouse">Enter the warehouse →</button>')+
+        '<p>The warehouse is open on the right, where the terminal usually is. Wrong box: nothing there. Right box: bring back what’s inside.</p>'+
+        '<button class="btn-warehouse" id="btn-warehouse">↻ Reload warehouse sim</button>'+
         '</div>';
-      $("btn-warehouse").addEventListener("click", whLoaded?reloadWarehouse:openWarehouse);
+      $("btn-warehouse").addEventListener("click", reloadWarehouse);
       return;
     }
     if(!c.files || !c.files.length){ e.innerHTML=""; return; }
@@ -803,7 +802,8 @@ file *              # ask what each file really is</pre>
         .catch(function(){ briefEl.innerHTML='<p class="muted">Couldn’t load this briefing. <a href="'+c.brief+'" target="_blank" rel="noopener">Open it directly</a>.</p>'; });
     }
     $("context").scrollTop=0;
-    setPane(!!c.warehouse && whLoaded);
+    if(c.warehouse){ openWarehouse(); }   // C4: open the sim on the right immediately — no extra click
+    else { setPane(false); }
     try{ history.replaceState(null,"","#"+c.slug); }catch(e){}
   }
 
@@ -994,6 +994,7 @@ file *              # ask what each file really is</pre>
     renderEvidence(CH[current]);   // CTA becomes the reload button
   }
   function reloadWarehouse(){
+    if(!whLoaded){ openWarehouse(); return; }   // not open yet -> open it
     try{ whFrame.contentWindow.location.reload(); }
     catch(e){ whFrame.src="../warehouse-game/index.html?embed=1"; }
   }
