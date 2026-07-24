@@ -215,7 +215,7 @@ body.touch #keyhint{display:none}
 
 /* ---------- overlays & dialogs ---------- */
 .overlay{
-  position:fixed;inset:0;z-index:20;
+  position:fixed;inset:0;z-index:130; /* above the injected site banner (z 100) */
   background:rgba(18,20,17,.72);
   display:grid;place-items:center;
   padding:18px;
@@ -397,6 +397,13 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
   .seg .v{font-size:13px}
   .brand .sub{display:none}
   .chip{padding:8px 8px 7px;font-size:10px}
+}
+/* phones: let the bar wrap instead of clipping (body overflow is hidden) —
+   brand + actions share the first row, the aisle sign drops to its own row */
+@media (max-width:640px){
+  #topbar{flex-wrap:wrap;gap:8px}
+  #locsign{order:3;flex:1 1 100%;justify-content:flex-start}
+  .actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
 }
 </style>
 </head>
