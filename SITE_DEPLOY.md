@@ -48,7 +48,7 @@ This repo has no root `index.html` yet. Add one that offers the two surfaces. Mi
 <div class="wrap">
   <div class="k">STEGANOGRAPHY CTF</div>
   <h1>Launch the challenges</h1>
-  <a class="card" href="./warehouse-game/"><b>Warehouse game →</b><br>Walk the memory warehouse (Challenge&nbsp;3).</a>
+  <a class="card" href="./warehouse-game/"><b>Warehouse game →</b><br>Walk the memory warehouse (Challenge&nbsp;4).</a>
   <a class="card" href="./browser-lab/"><b>Browser lab →</b><br>A 32-bit Linux terminal in your browser — solve every challenge, no install.</a>
 </div>
 ```
@@ -65,7 +65,7 @@ The boot kernel is fetched into `vendor/` (both are gitignored by size). For hos
 - Keep them out of git and add a build step that produces them into `dist/` before publish.
 
 Until this is done, ship Step 1's landing with the **warehouse game live** and the lab as "coming
-online" — the game alone is a complete, self-contained Challenge 3 experience.
+online" — the game alone is a complete, self-contained Challenge 4 experience.
 
 ## Step 3 — Publish with GitHub Pages
 

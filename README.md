@@ -2,7 +2,7 @@
 
 The **runnable environment** for the Steganography CTF: an in-browser 32-bit Linux lab where players
 solve the challenges without installing anything, plus the playable warehouse game used in
-Challenge 3. This is the companion to the challenge/content repo:
+Challenge 4. This is the companion to the challenge/content repo:
 
 **→ Challenges, briefings, writeups, and answers: [`jdtherobot/steganography-ctf`](https://github.com/jdtherobot/steganography-ctf)**
 
@@ -15,7 +15,7 @@ Keep the two straight:
 ```
 browser-lab/         In-browser 32-bit Linux lab (v86 + xterm). Chooser landing, terminal,
                      the disk-image build recipe, and the i386 toolchain feasibility proof.
-warehouse-game/      The top-down warehouse (Challenge 3's clue delivery). Self-contained static site.
+warehouse-game/      The top-down warehouse (Challenge 4's clue delivery). Self-contained static site.
 deploy/lab/          Hosting configs for the lab (COOP/COEP headers for CheerpX; v86 needs none).
 participant/         ⚠ Lab INPUTS ONLY — the sanitized player files the lab image bakes in
 build/               (challenge files + briefs + trimmed wordlist + the secret-scan gate).
@@ -47,7 +47,7 @@ needs internet (it loads v86/xterm from a CDN and fetches the boot image).
 `browser-lab/image/` has the reproducible recipe (Dockerfile + `build-image.sh`) that bakes the
 toolkit (`steghide`, `openssl`, `binwalk`, `python3`, `exiftool`, …) and the sanitized player files
 into a bootable image. See `browser-lab/image/README.md`. The toolchain is proven — it solves
-Challenges 2 and 4 inside a real 32-bit container (`browser-lab/feasibility/i386-toolchain-proof.md`).
+Challenges 2 and 3 inside a real 32-bit container (`browser-lab/feasibility/i386-toolchain-proof.md`).
 
 ## Hosting
 
@@ -57,7 +57,7 @@ Challenges 2 and 4 inside a real 32-bit container (`browser-lab/feasibility/i386
 ## Roadmap
 
 The near-term goal is to launch the warehouse game **from inside** the browser environment, so a
-player does all of Challenge 3 in one place. For now the game is a standalone site the CTF links to.
+player does all of Challenge 4 in one place. For now the game is a standalone site the CTF links to.
 
 ## Academic use
 

@@ -9,10 +9,14 @@
 # --- Final flags (the answers) ---
 Flag{H0NeyB4d6er10OKinG0OD!!!}
 Flag{DanG 7hat'S @ cUTe HOnEY b@D9eR}
+Flag{TOMHANKSAINTGOTSHITONME}
 Flag{Y0u haVe EnCouNTeR3d a w!Ld s1eEP p@RA1y$!S DEm0n}
 
-# --- Challenge 4 strong payload password (must never ship) ---
-L35f#t8w2&(X$MK8:
+# --- Challenge 3 strong payload password (must never ship; canonical prefix covers the full string) ---
+L35f#t8w2
+
+# --- Challenge 3 secret.enc password (derived from the brief's mask; never ships verbatim) ---
+DesertStorm#82pLm
 
 # --- Four-square PLAINTEXT answers (ciphertext is allowed; plaintext is not) ---
 TOMHANKSAINTGOTSHITONME

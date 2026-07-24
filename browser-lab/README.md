@@ -11,7 +11,7 @@ no install. The engine is **v86** (BSD-2, no special headers → runs on GitHub 
 | `index.html` | Landing + discreet chooser (Launch Terminal ready · Launch Desktop = honest upgrade explainer) |
 | `terminal.html` | The terminal lab harness — v86 + xterm.js, serial console, browser-local snapshot + Reset |
 | `ENGINE_DECISION.md` | Engine + host decision, with the measurements taken this session |
-| `feasibility/i386-toolchain-proof.md` | The de-risk: toolchain solves C2 + C4 in genuine 32-bit i386 (captured transcript) |
+| `feasibility/i386-toolchain-proof.md` | The de-risk: toolchain solves C2 + C3 in genuine 32-bit i386 (captured transcript) |
 | `image/` | Reproducible recipe that bakes the proven toolchain + sanitized files into a v86 image |
 | `_headers` | COOP/COEP for the CheerpX desktop on Cloudflare Pages |
 | `vendor/` | Same-origin boot blobs (git-ignored, large; fetched at deploy time) |
@@ -35,7 +35,7 @@ python3 -m http.server 8791
 
 ## Status (verified this session)
 
-- ✅ **i386 toolchain solves C2 + C4** in genuine 32-bit — `feasibility/i386-toolchain-proof.md`.
+- ✅ **i386 toolchain solves C2 + C3** in genuine 32-bit — `feasibility/i386-toolchain-proof.md`.
 - ✅ **Terminal boots a real interactive 32-bit Linux shell in-browser** (verified live: `uname -m → i686`).
 - ✅ **Landing + chooser** work; the Desktop button is an honest "not on this host" explainer, not a dead boot.
 - ✅ **Image packaging pipeline** (`docker export → fs2json → copy-to-sha256`) verified; sizes in `ENGINE_DECISION.md`.
