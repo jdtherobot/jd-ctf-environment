@@ -1,8 +1,9 @@
-# Challenge 2 — Stegosaurus 1
+# Challenge 2 · Steganography lvl 2
 
-Something is hidden inside this image. Recover it — the flag is the first line of
-what you pull out.
+You've recovered an image. The flag is hidden inside it — recover it.
 
 **File:** `stego_badger.jpeg`
 
-Flag format: `Flag{...}`
+**Flag format:** `Flag{...}`
+
+> Stuck? Optional hints are in [`hints/`](hints/).
