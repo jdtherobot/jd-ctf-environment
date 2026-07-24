@@ -761,12 +761,30 @@ file *              # ask what each file really is</pre>
       box.classList.remove("solved"); msg.className="flagbox-msg"; msg.textContent="";
     }
   }
+  // Keep the live terminal from stealing focus (or swallowing keystrokes) while
+  // the player is typing in the flag box. With v86's disable_keyboard, keys only
+  // reach the emulator through xterm's focused textarea, so as long as a real
+  // form field holds focus the box works — these guards make sure it keeps it.
+  function formFieldFocused(){
+    var a=document.activeElement;
+    return !!(a && (a.tagName==="INPUT"||a.tagName==="TEXTAREA") && !a.classList.contains("xterm-helper-textarea"));
+  }
+  function focusTerminal(){ if(formFieldFocused())return; try{ term.focus(); }catch(e){} }
   (function wireFlag(){
     var form=$("flagbox"); if(!form) return;
+    var input=$("flag-input");
+    // a click on the box must land — and keep — focus, even over a focused terminal
+    if(input){
+      ["pointerdown","mousedown","touchstart"].forEach(function(ev){
+        input.addEventListener(ev,function(e){ e.stopPropagation(); }, true);
+      });
+      input.addEventListener("click",function(){ if(document.activeElement!==input) input.focus(); });
+      input.addEventListener("pointerup",function(){ if(document.activeElement!==input) input.focus(); });
+    }
     form.addEventListener("submit",function(e){
       e.preventDefault();
       var c=CH[current]; if(!c||!c.flag) return;
-      var input=$("flag-input"), msg=$("flag-msg");
+      var msg=$("flag-msg");
       var val=(input.value||"").trim(); if(!val) return;
       if(!(window.crypto&&crypto.subtle)){ msg.className="flagbox-msg err"; msg.textContent="Flag checking needs a secure (https) context."; return; }
       sha256Hex(val).then(function(h){
@@ -1078,7 +1096,7 @@ file *              # ask what each file really is</pre>
 
     var sawOutput=false, bootDone=false, obuf="", settled=false;
     function finishBoot(){ if(bootDone)return; bootDone=true; setBar(100); $("overlay").classList.add("hidden");
-      setStatus("running","ok"); term.focus(); }
+      setStatus("running","ok"); focusTerminal(); }
     emulator.add_listener("serial0-output-byte",function(byte){
       var ch=String.fromCharCode(byte);
       if(!sawOutput){ sawOutput=true; setBar(60); setStatus("kernel up — starting shell…"); }
@@ -1093,7 +1111,7 @@ file *              # ask what each file really is</pre>
     // Lab image (Debian) boots slower than a busybox base — give it room, then fall back honestly.
     setTimeout(function(){ if(!sawOutput){ bootFailed("The lab image didn’t respond in time. If this is a fresh deploy, the image may still be publishing."); } else { finishBoot(); } }, 75000);
 
-    term.onData(function(d){ emulator.serial0_send(d); });
+    term.onData(function(d){ if(formFieldFocused())return; emulator.serial0_send(d); });
     // Settle the box once the shell is up: size the tty, rename the host to
     // chiral-lab, then wipe the boot banner and repaint the Chiral one. Sent as
     // one quiet line (leading space -> not saved to history), ~0.5s after the
@@ -1113,7 +1131,7 @@ file *              # ask what each file really is</pre>
           term.write("\x1b[2J\x1b[3J\x1b[H");
           CHIRAL_BANNER.forEach(function(l){ term.write(l+"\r\n"); });
           emulator.serial0_send("\n");
-          term.focus();
+          focusTerminal();
         }catch(e){}
       }, 500);
     }
@@ -1130,7 +1148,7 @@ file *              # ask what each file really is</pre>
 
   function runInTerminal(cmd){
     if(!emulator || !window._emulator){ return; }
-    try{ term.focus(); emulator.serial0_send(cmd+"\n"); }catch(e){}
+    try{ focusTerminal(); emulator.serial0_send(cmd+"\n"); }catch(e){}
   }
 
   // IndexedDB helpers
