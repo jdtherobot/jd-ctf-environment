@@ -1,8 +1,16 @@
 # i386 toolchain proof — the real de-risk
 
 **Result: PASS.** In a genuine 32-bit i386 Linux container, the player toolchain installs and
-**solves Challenge 2 and Challenge 4 from the sanitized participant files**, recovering both exact
-flags. This proves the userland a v86/CheerpX image would contain.
+**solves the two JPEG challenges from the sanitized participant files** (canonical numbering:
+Challenge 2 and Challenge 3), recovering both exact flags. This proves the userland a
+v86/CheerpX image would contain.
+
+> **Note (2026-07):** challenge folders were renumbered to the canonical steganography-ctf
+> slugs after this run was captured — the Honey.jpeg multi-carve chain (labelled "Challenge 4"
+> in the capture below) is now **Challenge 3** (`03-steganography-lvl-3`), and the shipped
+> carrier was corrected from the `STEGO_KEY_386` build to the `STEGO_KEY_368` build (records
+> 3, 6, 8; `secret.enc` password now matches the mask hinted in the brief). The captured
+> offsets/passwords below are from the original carrier; the chain shape is identical.
 
 Everything below is copied from a run captured this session
 (`build/scratch/lab/i386_proof.log`, `DOCKER_RC=0`). Nothing is reconstructed.
@@ -11,8 +19,8 @@ Everything below is copied from a run captured this session
 
 - Host: macOS (Apple Silicon / arm64), Docker Desktop with qemu **linux/386** emulation.
 - Container: `docker run --platform linux/386 debian:stable-slim` — a real 32-bit guest.
-- Inputs mounted **read-only**: `participant/challenges/02-stegosaurus-1/stego_badger.jpeg`,
-  `participant/challenges/04-stegosaurus-3/Honey.jpeg`, and the shipped
+- Inputs mounted **read-only**: `participant/challenges/02-steganography-lvl-2/stego_badger.jpeg`,
+  `participant/challenges/03-steganography-lvl-3/Honey.jpeg`, and the shipped
   `build/wordlists/trimmed.txt` (921 words). No `facilitator/` file and no archive file was used.
 
 ### Two gotchas found and handled (both matter for the image build)
@@ -112,7 +120,7 @@ The image recipe installs `setuptools` so the shipped lab has a working `stegcra
 - Extracted payload SHA-256 equals the canonical `ddebc7db…c11a5`.
 - Flag: **`Flag{DanG 7hat'S @ cUTe HOnEY b@D9eR}`**.
 
-## Challenge 4 — full chain (captured)
+## Challenge 3 — the Honey multi-carve chain ("Challenge 4" at capture time), captured
 
 ```
 /in/Honey.jpeg: JPEG image data, Exif standard: ... 1024x1024, components 3

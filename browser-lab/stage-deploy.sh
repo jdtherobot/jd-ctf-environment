@@ -5,7 +5,7 @@
 #
 #   DEST/
 #     index.html                 root landing (the "Launch challenges" page)
-#     warehouse-game/index.html  Challenge 3 companion game (self-contained)
+#     warehouse-game/index.html  Challenge 4 companion game (self-contained)
 #     browser-lab/
 #       index.html               lab chooser (Workbench / Terminal)
 #       workbench.html           the Guided Workbench GUI

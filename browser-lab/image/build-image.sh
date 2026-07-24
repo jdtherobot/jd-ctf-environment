@@ -28,12 +28,12 @@ echo "== 1) assemble sanitized payload — per-challenge staging under opt/ctf/ 
 # only land in ~/challenges/<slug>/ when the player 'downloads' them (workbench
 # button or the `ctf` helper) — mirroring real forensics. Briefs are shown in the
 # web UI, so the box carries only the artifacts.
-PAY="$HERE/payload"; rm -rf "$PAY"; mkdir -p "$PAY/opt/ctf/01-photo-day" "$PAY/opt/ctf/02-stegosaurus-1" "$PAY/opt/ctf/04-stegosaurus-3"
-cp "$REPO_ROOT/participant/challenges/01-photo-day/email.eml"             "$PAY/opt/ctf/01-photo-day/email.eml"
-cp "$REPO_ROOT/participant/challenges/02-stegosaurus-1/stego_badger.jpeg" "$PAY/opt/ctf/02-stegosaurus-1/stego_badger.jpeg"
-cp "$REPO_ROOT/build/wordlists/trimmed.txt"                              "$PAY/opt/ctf/02-stegosaurus-1/wordlist.txt"
-cp "$REPO_ROOT/participant/challenges/04-stegosaurus-3/Honey.jpeg"        "$PAY/opt/ctf/04-stegosaurus-3/Honey.jpeg"
-cp "$REPO_ROOT/build/wordlists/trimmed.txt"                              "$PAY/opt/ctf/04-stegosaurus-3/wordlist.txt"
+PAY="$HERE/payload"; rm -rf "$PAY"; mkdir -p "$PAY/opt/ctf/01-steganography-lvl-1" "$PAY/opt/ctf/02-steganography-lvl-2" "$PAY/opt/ctf/03-steganography-lvl-3"
+cp "$REPO_ROOT/participant/challenges/01-steganography-lvl-1/email.eml"             "$PAY/opt/ctf/01-steganography-lvl-1/email.eml"
+cp "$REPO_ROOT/participant/challenges/02-steganography-lvl-2/stego_badger.jpeg"     "$PAY/opt/ctf/02-steganography-lvl-2/stego_badger.jpeg"
+cp "$REPO_ROOT/build/wordlists/trimmed.txt"                                         "$PAY/opt/ctf/02-steganography-lvl-2/wordlist.txt"
+cp "$REPO_ROOT/participant/challenges/03-steganography-lvl-3/Honey.jpeg"            "$PAY/opt/ctf/03-steganography-lvl-3/Honey.jpeg"
+cp "$REPO_ROOT/build/wordlists/trimmed.txt"                                         "$PAY/opt/ctf/03-steganography-lvl-3/wordlist.txt"
 find "$PAY" -type f | sort
 
 echo "== 2) secret-scan the payload (must PASS before it goes in an image) =="
