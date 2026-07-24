@@ -1,6 +1,6 @@
 # HBHY Logistics — Memory Warehouse
 
-A top-down, navigable warehouse: the immersion layer for **Challenge 3 (Stegosaurus 2)**.
+A top-down, navigable warehouse: the immersion layer for **Challenge 4 (Computer Architecture Warehouse)**.
 Your page-table walk resolves the virtual address in the briefing to a physical location —
 row, shelf level, bay, subsection, box. Walk the floor, find the face, open the box.
 The right box holds a field note you can view in-game and download; every other box is
@@ -65,5 +65,5 @@ What it does instead:
 
 That is *light obfuscation*, not security. Treat the game as flavor and confirmation
 for participants who solved the page-table walk on paper — the actual verification of
-Challenge 3 answers happens outside this page. The note contains only the intermediate
+Challenge 4 answers happens outside this page. The note contains only the intermediate
 clue for the next step; no flag or final answer ships in this folder.

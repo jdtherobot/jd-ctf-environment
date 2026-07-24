@@ -349,7 +349,7 @@
     are already on it. A few commands to get moving:</p>
     <pre>cd ~/challenges     # go to the folder with your files
 ls -la              # list what's there
-cat BRIEF-*.md      # print a briefing to the screen
+cat wordlist.txt    # print a file to the screen
 less email.eml      # scroll a big file  (press q to quit)
 file *              # ask what each file really is</pre>
     <p class="muted"><span class="kbd">Ctrl</span>+<span class="kbd">C</span> stops a running command.
@@ -402,35 +402,36 @@ file *              # ask what each file really is</pre>
   //  behind an extra confirm. Tools are NOT hints; they live in the Kali menu.
   // =========================================================================
   var CH = [
-    { id:"01", slug:"01-photo-day", title:"Photo Day",
+    { id:"01", slug:"01-steganography-lvl-1", title:"Steganography lvl 1",
       eyebrow:"Challenge 01 · Intercept", base:100,
-      brief:"challenges/01-photo-day/BRIEF.md",
-      files:[ {name:"email.eml", kind:"eml", url:"challenges/01-photo-day/email.eml", sub:"the intercepted message"} ],
+      brief:"challenges/01-steganography-lvl-1/BRIEF.md",
+      files:[ {name:"email.eml", kind:"eml", url:"challenges/01-steganography-lvl-1/email.eml", sub:"the intercepted message"} ],
       boxFiles:["email.eml"],
       hints:[] },
-    { id:"02", slug:"02-stegosaurus-1", title:"Stegosaurus 1",
+    { id:"02", slug:"02-steganography-lvl-2", title:"Steganography lvl 2",
       eyebrow:"Challenge 02 · Steganography", base:200,
-      brief:"challenges/02-stegosaurus-1/BRIEF.md",
-      files:[ {name:"stego_badger.jpeg", kind:"image", url:"challenges/02-stegosaurus-1/stego_badger.jpeg", sub:"the carrier image"} ],
+      brief:"challenges/02-steganography-lvl-2/BRIEF.md",
+      files:[ {name:"stego_badger.jpeg", kind:"image", url:"challenges/02-steganography-lvl-2/stego_badger.jpeg", sub:"the carrier image"} ],
       boxFiles:["stego_badger.jpeg","wordlist.txt"],
       hints:[
         { cost:25, body:"WE WILL, WE WILL…" },
         { cost:50, body:"Try common password lists / stego tools." }
       ] },
-    { id:"03", slug:"03-warehouse", title:"The Memory Warehouse",
-      eyebrow:"Challenge 03 · Architecture", base:300,
-      brief:"challenges/03-warehouse/BRIEF.md",
+    { id:"03", slug:"03-steganography-lvl-3", title:"Steganography lvl 3",
+      eyebrow:"Challenge 03 · Steganography", base:500,
+      brief:"challenges/03-steganography-lvl-3/BRIEF.md",
+      files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/03-steganography-lvl-3/Honey.jpeg", sub:"one file, many layers"} ],
+      boxFiles:["Honey.jpeg","wordlist.txt"],
+      hints:[] },
+    { id:"04", slug:"04-computer-architecture-warehouse", title:"Computer Architecture Warehouse",
+      eyebrow:"Challenge 04 · Architecture", base:300,
+      brief:"challenges/04-computer-architecture-warehouse/BRIEF.md",
       warehouse:true,
       hints:[
+        { cost:25, body:"Have you beaten Steganography lvl 2? This challenge reuses the exact same document you pulled out of lvl 2 — and if you kept it, the end of this one gets a lot easier." },
         { cost:50, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = shelf level (bottom = 1 → top = 3); L3 = bay depth (front = 1, back = 2); L4 = sub-section of that bay's grate; and the offset = the box number." },
         { cost:75, spoiler:true, body:"Split the low 48 bits of the VA into [L1 9][L2 9][L3 9][L4 9][OFFSET 12]. Walk level by level (L1 → L4), then use the offset to pick the exact box." }
-      ] },
-    { id:"04", slug:"04-stegosaurus-3", title:"Stegosaurus 3",
-      eyebrow:"Challenge 04 · Steganography", base:500,
-      brief:"challenges/04-stegosaurus-3/BRIEF.md",
-      files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/04-stegosaurus-3/Honey.jpeg", sub:"one file, many layers"} ],
-      boxFiles:["Honey.jpeg","wordlist.txt"],
-      hints:[] }
+      ] }
   ];
 
   // =========================================================================
@@ -629,7 +630,7 @@ file *              # ask what each file really is</pre>
       e.innerHTML =
         '<h4>The warehouse</h4>'+
         '<div class="warehouse-cta">'+
-        '<p>Challenge 3 isn’t in a file — it’s a place. Resolve the address, then walk the floor to your box.</p>'+
+        '<p>Challenge 4 isn’t in a file — it’s a place. Resolve the address, then walk the floor to your box.</p>'+
         '<button class="btn-warehouse" id="btn-warehouse">Enter the warehouse →</button>'+
         '</div>';
       $("btn-warehouse").addEventListener("click",openWarehouse);
@@ -714,7 +715,7 @@ file *              # ask what each file really is</pre>
     if(kind==="eml"){
       body.innerHTML='<div class="mailview">loading…</div>';
       fetch(url).then(function(r){ if(!r.ok) throw 0; return r.text(); })
-        .then(function(t){ curEml={name:name,url:url,slug:(CH[current]||{}).slug||"01-photo-day"}; showEmail(t); })
+        .then(function(t){ curEml={name:name,url:url,slug:(CH[current]||{}).slug||"01-steganography-lvl-1"}; showEmail(t); })
         .catch(function(){ body.innerHTML='<div class="mailview"><div class="mail-body">Couldn’t load this message. Use Download instead.</div></div>'; });
       showDlg(dlgViewer); return;
     }
@@ -752,7 +753,7 @@ file *              # ask what each file really is</pre>
 
   function saveEmailToBox(){
     if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
-    var slug=(curEml&&curEml.slug)||"01-photo-day";
+    var slug=(curEml&&curEml.slug)||"01-steganography-lvl-1";
     runInTerminal("ctf "+slug);
     toast("Saved the email to ~/challenges/"+slug+" — you’re in that folder now.");
   }
@@ -761,8 +762,8 @@ file *              # ask what each file really is</pre>
   function savePhotoToBox(name){
     if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
     var py='import email,email.policy;m=email.message_from_binary_file(open("email.eml","rb"),policy=email.policy.default);[open(p.get_filename(),"wb").write(p.get_payload(decode=True)) for p in m.walk() if p.get_content_maintype()=="image"]';
-    runInTerminal("ctf 01-photo-day >/dev/null 2>&1; python3 -c '"+py+"'; ls -l "+name);
-    toast("Saved "+name+" to ~/challenges/01-photo-day — inspect it with the terminal tools.");
+    runInTerminal("ctf 01-steganography-lvl-1 >/dev/null 2>&1; python3 -c '"+py+"'; ls -l "+name);
+    toast("Saved "+name+" to ~/challenges/01-steganography-lvl-1 — inspect it with the terminal tools.");
   }
 
   // Render a .eml the way a mail client would: sender/subject/body + clickable
@@ -798,10 +799,10 @@ file *              # ask what each file really is</pre>
     return {html:h, atts:atts};
   }
   function openWarehouse(){
-    $("viewer-title").textContent="The Memory Warehouse";
+    $("viewer-title").textContent="Computer Architecture Warehouse";
     $("viewer-dl").style.display="none";
     vwBack.hidden=true; vwBox.hidden=true;
-    $("viewer-body").innerHTML='<iframe src="../warehouse-game/index.html" title="Memory Warehouse game" allow="autoplay"></iframe>';
+    $("viewer-body").innerHTML='<iframe src="../warehouse-game/index.html" title="warehouse game" allow="autoplay"></iframe>';
     showDlg(dlgViewer);
   }
 
@@ -1072,7 +1073,7 @@ file *              # ask what each file really is</pre>
   //  boot the page
   // =========================================================================
   buildTabs();
-  // deep-link to a challenge by slug (#04-stegosaurus-3)
+  // deep-link to a challenge by slug (#03-steganography-lvl-3)
   var start=0, hash=(location.hash||"").replace(/^#/,"");
   if(hash){ CH.forEach(function(c,i){ if(c.slug===hash) start=i; }); }
   select(start);
