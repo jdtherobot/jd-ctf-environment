@@ -48,6 +48,8 @@ cp "$REPO_ROOT/warehouse-game/index.html" "$DEST/warehouse-game/index.html"
 cp index.html workbench.html terminal.html "$DEST/browser-lab/"
 [ -f _headers ] && cp _headers "$DEST/browser-lab/_headers"
 cp -r challenges "$DEST/browser-lab/challenges"
+# wordlists offered in the Applications -> Wordlists menu (download / save-to-box)
+[ -d wordlists ] && cp -r wordlists "$DEST/browser-lab/wordlists"
 if [ -d vendor ]; then
   mkdir -p "$DEST/browser-lab/vendor"; cp vendor/*.bin "$DEST/browser-lab/vendor/" 2>/dev/null || true
 fi
