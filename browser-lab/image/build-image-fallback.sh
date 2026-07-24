@@ -29,7 +29,7 @@ docker cp "$(dirname "$0")/overlay/etc/initramfs-tools/scripts/local-top/9proot"
 dex 'chmod +x /etc/initramfs-tools/scripts/local-top/9proot; update-initramfs -u -k "$(ls /lib/modules | head -1)" || update-initramfs -c -k "$(ls /lib/modules | head -1)"'
 dex 'mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d; printf "[Service]\nExecStart=\nExecStart=-/sbin/agetty --autologin root --noclear %%I 115200 vt100\n" > /etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf; systemctl enable serial-getty@ttyS0.service 2>/dev/null || true; passwd -d root || true'
 echo "   [i386] bake sanitized player files"
-dex 'useradd -m -s /bin/bash player 2>/dev/null || true; mkdir -p /home/player/challenges; cp -r /payload/. /home/player/challenges/; chown -R player:player /home/player/challenges; printf "\ncd ~/challenges 2>/dev/null; echo \"Chiral Lab - files in ~/challenges. Try: cat BRIEF-01-photo-day.md\"\n" >> /home/player/.bashrc'
+dex 'useradd -m -s /bin/bash player 2>/dev/null || true; mkdir -p /home/player/challenges; cp -r /payload/. /home/player/challenges/; chown -R player:player /home/player/challenges; printf "\ncd ~/challenges 2>/dev/null; echo \"Chiral Lab - files in ~/challenges. Briefs are in the workbench UI.\"\n" >> /home/player/.bashrc'
 dex 'apt-get clean; rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/* 2>/dev/null || true'
 
 echo "   [i386] verify arch inside the container"

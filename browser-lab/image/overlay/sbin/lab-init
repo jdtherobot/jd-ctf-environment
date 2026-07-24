@@ -21,7 +21,7 @@ hostname chiral-lab 2>/dev/null
 cat /etc/motd 2>/dev/null
 # Plain ASCII dash: the serial console isn't UTF-8, so an em dash prints as "â".
 printf '\nChiral Lab - the box starts empty.\n'
-printf 'Load a challenge with:  ctf 1   (or 2, 4) - or use the Download button in the workbench.\n\n'
+printf 'Load a challenge with:  ctf 1   (or 2, 3) - or use the Download button in the workbench.\n\n'
 cd /root/challenges 2>/dev/null || cd /root
 
 # Keep respawning the shell so an accidental `exit` (or Ctrl-D) doesn't leave

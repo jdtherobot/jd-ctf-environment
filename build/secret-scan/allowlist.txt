@@ -2,11 +2,11 @@
 # EXEMPT from the denylist string scan, with rationale. Keep this list tiny and justified.
 #
 # Currently: none required. The denylist contains only true answers (final flags, the strong
-# C4 payload password, four-square plaintext, the full keyblock concatenation) — none of which
+# C3 payload password, four-square plaintext, the full keyblock concatenation) — none of which
 # should ever appear in participant/, so no static participant file needs an exception.
 #
 # Intended in-story clues are NOT in the denylist and therefore need no exception here:
-#   - honeybadger4lyfe  -> lives in participant/challenges/01-photo-day/email.eml by design
+#   - honeybadger4lyfe  -> lives in participant/challenges/01-steganography-lvl-1/email.eml by design
 #   - password123, desertstorm -> crackable-by-design; only appear inside a shipped trimmed
 #     wordlist if one is shipped. If you add a wordlist under participant/, list it below.
 #
