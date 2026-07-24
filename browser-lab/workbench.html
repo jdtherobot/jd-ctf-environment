@@ -131,6 +131,10 @@
   .work-banner.ok{background:color-mix(in srgb,var(--accent) 8%,#0b100d);color:var(--accent)}
   .work-banner b{color:var(--ink)}
   .term-wrap{flex:1;position:relative;min-height:0}
+  /* C4's warehouse takes over the terminal pane (the shell isn't needed there) */
+  #warehouse-pane{flex:1;position:relative;min-height:0}
+  #warehouse-pane iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#171a15}
+  .pane-off{display:none!important}
   #terminal{position:absolute;inset:0;padding:8px 6px}
 
   .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -186,6 +190,20 @@
   .hint-lbl{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink)}
   .hint-cost{font-family:var(--mono);font-size:11px;color:var(--accent-2);white-space:nowrap}
   .hint-body{font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px}
+
+  /* ---- flag submission (scoped to the open challenge) ---- */
+  .flagbox{margin:0 0 18px;border:1px solid var(--line);background:var(--panel);padding:13px 15px;border-radius:0}
+  .flagbox-label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 10px}
+  .flagbox-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .flagbox-input{flex:1 1 220px;min-width:0;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:10px 12px;border-radius:0}
+  .flagbox-input::placeholder{color:var(--ink-dim);opacity:.7}
+  .flagbox-input:focus{outline:none;border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+  .flagbox-btn{flex:none;border-radius:0}
+  .flagbox-msg{font-family:var(--mono);font-size:12px;line-height:1.5;margin:10px 0 0;min-height:1em}
+  .flagbox-msg.ok{color:var(--accent)}
+  .flagbox-msg.err{color:var(--danger)}
+  .flagbox.solved{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+  .flagbox.solved .flagbox-row{display:none}
 
   /* ---- Kali applications menu ---- */
   .apps-dlg{max-width:min(680px,96vw);width:96vw}
@@ -295,15 +313,24 @@
       <div class="ctx-inner">
         <p class="eyebrow" id="ctx-eyebrow">Challenge</p>
         <h1 class="ctx-title" id="ctx-title">Loading…</h1>
+        <form class="flagbox" id="flagbox" autocomplete="off">
+          <label class="flagbox-label" for="flag-input">Submit flag</label>
+          <div class="flagbox-row">
+            <input class="flagbox-input" id="flag-input" type="text" placeholder="Flag{…}" spellcheck="false" aria-label="Submit the flag for this challenge">
+            <button class="btn btn-primary flagbox-btn" type="submit">Submit</button>
+          </div>
+          <p class="flagbox-msg" id="flag-msg" role="status" aria-live="polite"></p>
+        </form>
         <div class="md" id="brief">Loading the briefing…</div>
         <div class="evidence" id="evidence"></div>
         <div class="hints" id="hints"></div>
       </div>
     </section>
 
-    <!-- Right: the shared, real Linux box -->
+    <!-- Right: the shared, real Linux box — or, on Challenge 4, the warehouse -->
     <section class="work" aria-label="Workbench terminal">
       <div class="work-banner" id="work-banner">loading engine…</div>
+      <div class="work-banner ok pane-off" id="warehouse-banner"><b>HBHY Logistics</b> — resolve the address on paper, then walk the floor to your box. The terminal isn’t needed for this one.</div>
       <div class="term-wrap">
         <div id="terminal"></div>
         <div class="overlay" id="overlay">
@@ -314,6 +341,9 @@
             <div class="hint">First boot fetches the kernel + lab image. It streams what it needs, so give it a moment; later boots are cached by your browser.</div>
           </div>
         </div>
+      </div>
+      <div id="warehouse-pane" class="pane-off">
+        <iframe id="warehouse-frame" title="Computer Architecture Warehouse game" allow="autoplay"></iframe>
       </div>
     </section>
   </div>
@@ -408,12 +438,14 @@ file *              # ask what each file really is</pre>
       brief:"challenges/01-steganography-lvl-1/BRIEF.md",
       files:[ {name:"email.eml", kind:"eml", url:"challenges/01-steganography-lvl-1/email.eml", sub:"the intercepted message"} ],
       boxFiles:["email.eml"],
+      flag:"d95e39d16dcf40a6705a49c39a6820c33dc3296896abd98d29f691002dc01e13",
       hints:[] },
     { id:"02", slug:"02-steganography-lvl-2", title:"Steganography lvl 2",
       eyebrow:"Challenge 02 · Steganography", base:200,
       brief:"challenges/02-steganography-lvl-2/BRIEF.md",
       files:[ {name:"stego_badger.jpeg", kind:"image", url:"challenges/02-steganography-lvl-2/stego_badger.jpeg", sub:"the carrier image"} ],
       boxFiles:["stego_badger.jpeg","wordlist.txt"],
+      flag:"061f3d2d27c3b9ce8e55596494670fa93e6fa56e6f3ba76ae3b8776d0a309a74",
       hints:[
         { cost:25, body:"WE WILL, WE WILL…" },
         { cost:50, body:"Try common password lists / stego tools." }
@@ -423,11 +455,13 @@ file *              # ask what each file really is</pre>
       brief:"challenges/03-steganography-lvl-3/BRIEF.md",
       files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/03-steganography-lvl-3/Honey.jpeg", sub:"one file, many layers"} ],
       boxFiles:["Honey.jpeg","wordlist.txt"],
+      flag:"43f9a331935218745b0f3ae6ecdede8777e04068865bb9f580ed09b1c1dcc4f8",
       hints:[] },
     { id:"04", slug:"04-computer-architecture-warehouse", title:"Computer Architecture Warehouse",
       eyebrow:"Challenge 04 · Architecture", base:300,
       brief:"challenges/04-computer-architecture-warehouse/BRIEF.md",
       warehouse:true,
+      flag:"81223d18eaf595d4324aa3a8f7f23598ec769a20c12812cc15fec534da2b4d71",
       hints:[
         { cost:25, body:"Have you beaten Steganography lvl 2? This challenge reuses the exact same document you pulled out of lvl 2 — and if you kept it, the end of this one gets a lot easier." },
         { cost:50, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = shelf level (bottom = 1 → top = 3); L3 = bay depth (front = 1, back = 2); L4 = sub-section of that bay's grate; and the offset = the box number." },
@@ -631,10 +665,13 @@ file *              # ask what each file really is</pre>
       e.innerHTML =
         '<h4>The warehouse</h4>'+
         '<div class="warehouse-cta">'+
-        '<p>Challenge 4 isn’t in a file — it’s a place. Resolve the address, then walk the floor to your box.</p>'+
-        '<button class="btn-warehouse" id="btn-warehouse">Enter the warehouse →</button>'+
+        (whLoaded
+          ? '<p>The warehouse is open on the right, where the terminal usually is. Wrong box: nothing there. Right box: bring back what’s inside.</p>'+
+            '<button class="btn-warehouse" id="btn-warehouse">↻ Reload the warehouse</button>'
+          : '<p>Challenge 4 isn’t in a file — it’s a place. Resolve the address, then walk the floor to your box — the floor opens right here, in the terminal pane.</p>'+
+            '<button class="btn-warehouse" id="btn-warehouse">Enter the warehouse →</button>')+
         '</div>';
-      $("btn-warehouse").addEventListener("click",openWarehouse);
+      $("btn-warehouse").addEventListener("click", whLoaded?reloadWarehouse:openWarehouse);
       return;
     }
     if(!c.files || !c.files.length){ e.innerHTML=""; return; }
@@ -685,6 +722,7 @@ file *              # ask what each file really is</pre>
     Array.prototype.forEach.call($("tabs").children,function(b,i){ b.classList.toggle("active",i===idx); b.setAttribute("aria-selected", i===idx?"true":"false"); });
     $("ctx-eyebrow").textContent=c.eyebrow;
     $("ctx-title").textContent=c.title;
+    renderFlag(c);
     renderEvidence(c);
     renderHints(c);
     var briefEl=$("brief");
@@ -696,8 +734,47 @@ file *              # ask what each file really is</pre>
         .catch(function(){ briefEl.innerHTML='<p class="muted">Couldn’t load this briefing. <a href="'+c.brief+'" target="_blank" rel="noopener">Open it directly</a>.</p>'; });
     }
     $("context").scrollTop=0;
+    setPane(!!c.warehouse && whLoaded);
     try{ history.replaceState(null,"","#"+c.slug); }catch(e){}
   }
+
+  // =========================================================================
+  //  FLAG SUBMISSION — scoped to the open challenge. The input is hashed in the
+  //  browser (SHA-256) and compared to the challenge's known digest; solved
+  //  state persists per browser. No plaintext flag ships in the page.
+  // =========================================================================
+  var FLAG_STORE="ctf-solved";
+  function loadSolved(){ try{ return JSON.parse(localStorage.getItem(FLAG_STORE))||{}; }catch(e){ return {}; } }
+  function saveSolved(m){ try{ localStorage.setItem(FLAG_STORE,JSON.stringify(m)); }catch(e){} }
+  function sha256Hex(text){
+    return crypto.subtle.digest("SHA-256",new TextEncoder().encode(text)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf),function(b){ return ("0"+b.toString(16)).slice(-2); }).join("");
+    });
+  }
+  function renderFlag(c){
+    var box=$("flagbox"), input=$("flag-input"), msg=$("flag-msg");
+    if(!box) return;
+    input.value="";
+    if(loadSolved()[c.id]){
+      box.classList.add("solved"); msg.className="flagbox-msg ok"; msg.textContent="✓ Solved";
+    } else {
+      box.classList.remove("solved"); msg.className="flagbox-msg"; msg.textContent="";
+    }
+  }
+  (function wireFlag(){
+    var form=$("flagbox"); if(!form) return;
+    form.addEventListener("submit",function(e){
+      e.preventDefault();
+      var c=CH[current]; if(!c||!c.flag) return;
+      var input=$("flag-input"), msg=$("flag-msg");
+      var val=(input.value||"").trim(); if(!val) return;
+      if(!(window.crypto&&crypto.subtle)){ msg.className="flagbox-msg err"; msg.textContent="Flag checking needs a secure (https) context."; return; }
+      sha256Hex(val).then(function(h){
+        if(h===c.flag){ var m=loadSolved(); m[c.id]=true; saveSolved(m); renderFlag(c); }
+        else{ msg.className="flagbox-msg err"; msg.textContent="Not the flag — check case, spaces, and symbols."; }
+      });
+    });
+  })();
 
   // =========================================================================
   //  File viewer + warehouse overlay (same dialog, different body)
@@ -799,12 +876,24 @@ file *              # ask what each file really is</pre>
        '<div class="mail-foot">Open an attachment to view it, save it to your device, or drop it into the challenge folder on the box.</div></div>';
     return {html:h, atts:atts};
   }
+  // ---- the warehouse lives IN the right pane (C4 never needs the shell). ----
+  // The iframe loads once (?embed=1 strips the site banner inside it) and stays
+  // alive across tab switches; the hidden terminal keeps running underneath.
+  var whPane=$("warehouse-pane"), whFrame=$("warehouse-frame"), whLoaded=false;
+  function setPane(warehouse){
+    document.querySelector(".term-wrap").classList.toggle("pane-off",!!warehouse);
+    whPane.classList.toggle("pane-off",!warehouse);
+    $("work-banner").classList.toggle("pane-off",!!warehouse);
+    $("warehouse-banner").classList.toggle("pane-off",!warehouse);
+  }
   function openWarehouse(){
-    $("viewer-title").textContent="Computer Architecture Warehouse";
-    $("viewer-dl").style.display="none";
-    vwBack.hidden=true; vwBox.hidden=true;
-    $("viewer-body").innerHTML='<iframe src="../warehouse-game/index.html" title="warehouse game" allow="autoplay"></iframe>';
-    showDlg(dlgViewer);
+    if(!whLoaded){ whFrame.src="../warehouse-game/index.html?embed=1"; whLoaded=true; }
+    setPane(true);
+    renderEvidence(CH[current]);   // CTA becomes the reload button
+  }
+  function reloadWarehouse(){
+    try{ whFrame.contentWindow.location.reload(); }
+    catch(e){ whFrame.src="../warehouse-game/index.html?embed=1"; }
   }
 
   // =========================================================================

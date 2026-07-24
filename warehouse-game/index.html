@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="HBHY Logistics memory warehouse — walk the aisles and pull the box your page-table walk resolves to.">
 <title>HBHY Logistics — Memory Warehouse · Chiral Lab</title>
+<script>/* ?embed=1 = running inside the workbench pane: no site banner (its nav
+   would navigate the iframe off to the main site), no small-screen gate. */
+if(location.search.indexOf('embed')!==-1)document.documentElement.setAttribute('data-embed','');</script>
 <link rel="stylesheet" href="../assets/site-theme.css">
 <link rel="stylesheet" href="../assets/site-chrome.css">
 <script defer src="../assets/site-chrome.js"></script>
+<style>html[data-embed] .site-header{display:none!important}</style>
 <style>
   /* the game keeps its own HBHY warehouse look; the site banner just sits on
      top so players can navigate back. Make room for it in the full-height shell. */
@@ -438,9 +442,10 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
   .brand .sub{display:none}
   .chip{padding:8px 8px 7px;font-size:10px}
 }
-/* phones: let the bar wrap instead of clipping (body overflow is hidden) —
-   brand + actions share the first row, the aisle sign drops to its own row */
-@media (max-width:640px){
+/* narrow windows and the embedded workbench pane: let the bar wrap instead of
+   overlapping/clipping (body overflow is hidden) — brand + actions share the
+   first row, the aisle sign drops to its own row */
+@media (max-width:1080px){
   #topbar{flex-wrap:wrap;gap:8px}
   #locsign{order:3;flex:1 1 100%;justify-content:flex-start}
   .actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
@@ -677,6 +682,7 @@ for(let i=1;i<=ROWS;i++){rowAtY[unitTop(i)]=i;rowAtY[unitTop(i)+1]=i;}
 
 const $=s=>document.querySelector(s);
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const EMBED=document.documentElement.hasAttribute('data-embed');
 
 /* Location check — light obfuscation only (see README.md): the verified
    coordinates are never stored in the clear; the entered location is hashed
@@ -1412,6 +1418,7 @@ function loop(t){
    ========================================================================= */
 let smallDismissed=false,introShown=false;
 function checkSmall(){
+  if(EMBED)return;   // the workbench pane is legitimately narrow; zoom handles it
   const small=innerWidth<900||innerHeight<540;
   if(small&&!smallDismissed&&(!openOverlay||openOverlay.id==='ov-small'))show('ov-small');
   else if(!small&&openOverlay&&openOverlay.id==='ov-small'){smallDismissed=true;closeOverlay();maybeIntro();}
