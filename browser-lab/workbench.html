@@ -68,8 +68,8 @@
   .menu-sep{height:1px;background:var(--line);margin:5px 8px}
 
   /* ---- stage ---- */
-  .stage{flex:1;display:grid;grid-template-columns:minmax(340px,42fr) 58fr;min-height:0}
-  @media (max-width:900px){ .stage{grid-template-columns:1fr;grid-auto-rows:minmax(0,auto)} }
+  .stage{flex:1;display:grid;grid-template-columns:minmax(340px,42fr) 58fr;grid-template-rows:minmax(0,1fr);min-height:0}
+  @media (max-width:900px){ .stage{grid-template-columns:1fr;grid-template-rows:none;grid-auto-rows:minmax(0,auto)} }
 
   .context{border-right:1px solid var(--line);background:var(--panel-2);overflow:auto;min-height:0}
   @media (max-width:900px){ .context{border-right:0;border-bottom:1px solid var(--line);max-height:52vh} }
@@ -225,6 +225,33 @@
   #app-usage{white-space:pre-wrap;word-break:break-word}
   #app-note{color:var(--accent-2)}
 
+  /* ---- wordlists (in ▦ Applications) ---- */
+  .apps-note{font-size:12px;color:var(--ink-dim);line-height:1.5;margin:0 0 10px}
+  .apps-note code{font-family:var(--mono);font-size:11.5px;background:#0b100d;border:1px solid var(--line);padding:1px 5px;color:var(--ink);overflow-wrap:anywhere}
+  .wl-list{display:flex;flex-direction:column;gap:8px}
+  .wl-row{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:10px 12px}
+  .wl-meta{min-width:0;flex:1}
+  .wl-nm{font-family:var(--mono);font-size:12.5px;color:var(--ink);word-break:break-all}
+  .wl-sub{font-size:11.5px;color:var(--ink-dim);margin-top:3px;line-height:1.45}
+  .wl-sub b{color:var(--ink);font-weight:600}
+  .wl-act{display:flex;gap:7px;flex-wrap:wrap;flex:none}
+  @media (max-width:560px){ .wl-row{flex-direction:column;align-items:stretch} }
+
+  /* ---- score board (◆ Score) ---- */
+  .score-dlg{max-width:min(620px,96vw)}
+  .sc-table{width:100%;border-collapse:collapse;font-size:13px}
+  .sc-table th{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-dim);
+    text-align:right;padding:0 0 9px;border-bottom:1px solid var(--line);font-weight:500}
+  .sc-table th:first-child{text-align:left}
+  .sc-table td{padding:9px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+  .sc-table tfoot td{border-bottom:0;border-top:1px solid var(--line);padding-top:11px;font-weight:700}
+  .sc-name{font-size:13px;color:var(--ink);padding-right:12px}
+  .sc-num{font-family:var(--mono);text-align:right;color:var(--ink);white-space:nowrap;padding-left:14px}
+  .sc-stat{font-family:var(--mono);font-size:11.5px;text-align:right;color:var(--ink-dim);padding-left:14px;white-space:nowrap}
+  .sc-stat.ok{color:var(--accent)}
+  .sc-earn{color:var(--accent)}
+  .sc-table tfoot .sc-earn{font-weight:700}
+
   /* ---- download-to-box button ---- */
   .btn-dl{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
     text-transform:uppercase;background:var(--accent);color:var(--carbon,#17161a);border:1px solid var(--accent);
@@ -295,6 +322,7 @@
     <nav class="tabs" id="tabs" aria-label="Challenges"></nav>
     <span class="spacer"></span>
     <span class="status" id="status">initializing…</span>
+    <button class="tb" id="btn-score" title="Your potential and earned score across all challenges">◆ Score</button>
     <button class="tb" id="btn-apps" title="Browse the tools available on this box">▦ Applications</button>
     <div class="menu">
       <button class="tb" id="btn-help" aria-haspopup="true" aria-expanded="false">✦ Help</button>
@@ -369,6 +397,16 @@
     <div class="row">
       <button class="btn btn-primary" data-close>Close</button>
     </div>
+  </div>
+</dialog>
+
+<dialog id="dlg-score" class="score-dlg">
+  <div class="dlg">
+    <p class="eyebrow">Chiral Lab</p>
+    <h3>◆ Your score</h3>
+    <p class="muted" style="margin-bottom:14px">Saved automatically in this browser. Every hint you open spends points; a challenge banks its remaining points once you submit the correct flag.</p>
+    <div id="score-body"></div>
+    <div class="row"><button class="btn btn-primary" data-close>Close</button></div>
   </div>
 </dialog>
 
@@ -454,11 +492,11 @@ file *              # ask what each file really is</pre>
       eyebrow:"Challenge 03 · Steganography", base:500,
       brief:"challenges/03-steganography-lvl-3/BRIEF.md",
       files:[ {name:"Honey.jpeg", kind:"image", url:"challenges/03-steganography-lvl-3/Honey.jpeg", sub:"one file, many layers"} ],
-      boxFiles:["Honey.jpeg","wordlist.txt"],
+      boxFiles:["Honey.jpeg"],
       flag:"43f9a331935218745b0f3ae6ecdede8777e04068865bb9f580ed09b1c1dcc4f8",
       hints:[] },
     { id:"04", slug:"04-computer-architecture-warehouse", title:"Computer Architecture Warehouse",
-      eyebrow:"Challenge 04 · Architecture", base:300,
+      eyebrow:"Challenge 04 · Architecture", base:400,
       brief:"challenges/04-computer-architecture-warehouse/BRIEF.md",
       warehouse:true,
       flag:"81223d18eaf595d4324aa3a8f7f23598ec769a20c12812cc15fec534da2b4d71",
@@ -591,6 +629,28 @@ file *              # ask what each file really is</pre>
   ];
 
   // =========================================================================
+  //  WORDLISTS — the lists a real Kali box ships under /usr/share/wordlists.
+  //  Served as static files next to this page (browser-lab/wordlists/) so each
+  //  can be downloaded to your machine or dropped straight onto the box. rockyou
+  //  is the project's existing trimmed list; the rest are trimmed to <= ~2 MB of
+  //  the most-common entries so they fetch and inject fast in the browser.
+  // =========================================================================
+  var WORDLISTS=[
+    { name:"rockyou.txt", file:"wordlists/rockyou.txt", size:"8.5 KB · 921 lines",
+      desc:"The classic leaked-password list — the default for passphrase and hash cracking." },
+    { name:"fasttrack.txt", file:"wordlists/fasttrack.txt", size:"2.4 KB · 262 lines",
+      desc:"Kali's FastTrack list — seasonal, classic, and corporate passwords for a quick pass." },
+    { name:"dirb common.txt", file:"wordlists/dirb-common.txt", size:"38 KB · 4,751 lines",
+      desc:"dirb's common web paths and filenames, for directory and content brute-forcing." },
+    { name:"directory-list-2.3-medium.txt", file:"wordlists/directory-list-2.3-medium.txt", size:"1.9 MB · 220,559 lines",
+      desc:"The DirBuster 2.3 medium list — deeper web-content discovery." },
+    { name:"nmap.lst", file:"wordlists/nmap.lst", size:"39 KB · 5,007 lines",
+      desc:"nmap's NSE default password list, for service-login brute-forcing." },
+    { name:"john password.lst", file:"wordlists/john-password.lst", size:"2.0 MB · 249,102 lines",
+      desc:"John the Ripper's default dictionary — frequency-ordered, most-common first." }
+  ];
+
+  // =========================================================================
   //  Tiny, dependency-free Markdown -> HTML (enough for the briefs: headings,
   //  bold/italic, inline+fenced code, blockquotes, lists, tables, hr).
   //  Everything is escaped first, so briefs render as text, never as live HTML.
@@ -704,8 +764,17 @@ file *              # ask what each file really is</pre>
   // that "reveals" the challenge in the terminal.
   function downloadChallenge(c){
     if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
-    var slug=c.slug, n=(c.boxFiles||[]).length;
-    runInTerminal("ctf "+slug);   // baked shell helper: copies /opt/ctf/<slug> in and cds
+    var slug=c.slug, files=(c.boxFiles||[]), n=files.length;
+    // Copy exactly the files this challenge lists — NOT the whole /opt/ctf/<slug>
+    // folder — so a challenge can withhold a staged file (e.g. lvl 3 ships no wordlist,
+    // though the image still carries one for lvl 2). Falls back to the `ctf` helper.
+    var cmd;
+    if(n){
+      cmd="mkdir -p ~/challenges/"+slug;
+      files.forEach(function(f){ cmd+="; cp /opt/ctf/"+slug+"/'"+String(f).replace(/'/g,"'\\''")+"' ~/challenges/"+slug+"/ 2>/dev/null"; });
+      cmd+="; cd ~/challenges/"+slug+" && ls -la";
+    } else { cmd="ctf "+slug; }
+    runInTerminal(cmd);
     toast("Downloaded "+n+" file"+(n>1?"s":"")+" to ~/challenges/"+slug+" — you’re in that folder now.");
     var b=$("btn-dl"); if(b){ b.textContent="✓ Downloaded — files are on the box"; b.disabled=true; b.classList.add("done"); }
   }
@@ -788,7 +857,7 @@ file *              # ask what each file really is</pre>
       var val=(input.value||"").trim(); if(!val) return;
       if(!(window.crypto&&crypto.subtle)){ msg.className="flagbox-msg err"; msg.textContent="Flag checking needs a secure (https) context."; return; }
       sha256Hex(val).then(function(h){
-        if(h===c.flag){ var m=loadSolved(); m[c.id]=true; saveSolved(m); renderFlag(c); }
+        if(h===c.flag){ var m=loadSolved(); m[c.id]=true; saveSolved(m); renderFlag(c); refreshScoreIfOpen(); }
         else{ msg.className="flagbox-msg err"; msg.textContent="Not the flag — check case, spaces, and symbols."; }
       });
     });
@@ -860,6 +929,21 @@ file *              # ask what each file really is</pre>
     var py='import email,email.policy;m=email.message_from_binary_file(open("email.eml","rb"),policy=email.policy.default);[open(p.get_filename(),"wb").write(p.get_payload(decode=True)) for p in m.walk() if p.get_content_maintype()=="image"]';
     runInTerminal("ctf 01-steganography-lvl-1 >/dev/null 2>&1; python3 -c '"+py+"'; ls -l "+name);
     toast("Saved "+name+" to ~/challenges/01-steganography-lvl-1 — inspect it with the terminal tools.");
+  }
+
+  // Drop a wordlist onto the box: fetch its bytes and inject them straight into the
+  // 9p filesystem with v86's create_file (no image rebuild). Lands in the home dir.
+  function saveWordlistToBox(w){
+    if(!emulator || !window._emulator){ toast("Start the terminal first — it’s still booting.", true); return; }
+    var base=w.file.split("/").pop();
+    toast("Fetching "+base+"…");
+    fetch(w.file).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.arrayBuffer(); })
+      .then(function(buf){
+        var p=emulator.create_file("root/"+base, new Uint8Array(buf));
+        return (p&&p.then)?p:Promise.resolve();
+      })
+      .then(function(){ runInTerminal("ls -l ~/"+base); toast("Saved "+base+" to your home folder (~) on the box."); })
+      .catch(function(e){ toast("Couldn’t save "+base+" to the box"+(e&&e.message?(" ("+e.message+")"):"")+".", true); });
   }
 
   // Render a .eml the way a mail client would: sender/subject/body + clickable
@@ -937,6 +1021,7 @@ file *              # ask what each file really is</pre>
     var banner=document.createElement("div"); banner.className="apps-banner";
     banner.innerHTML='<span>✓</span><span><b>Every tool you need is installed and working.</b> Browse the full Kali toolkit below.</span>';
     b.appendChild(banner);
+    renderWordlists(b);
     KALI.forEach(function(g){
       var sec=document.createElement("div"); sec.className="apps-cat";
       sec.innerHTML='<div class="apps-cat-h">'+esc(g.cat)+'</div>';
@@ -949,6 +1034,31 @@ file *              # ask what each file really is</pre>
       });
       sec.appendChild(grid); b.appendChild(sec);
     });
+  }
+
+  // The Wordlists section of ▦ Applications: each list downloads to your machine
+  // (a plain link) or drops onto the box (create_file into the 9p home dir).
+  function renderWordlists(b){
+    var sec=document.createElement("div"); sec.className="apps-cat";
+    sec.innerHTML='<div class="apps-cat-h">Wordlists</div>'+
+      '<div class="apps-note">The lists a Kali box keeps under <code>/usr/share/wordlists</code>. '+
+      'Download one to your machine, or drop it onto the box to feed the crackers (e.g. '+
+      '<code>stegcracker file ~/rockyou.txt</code>).</div>';
+    var list=document.createElement("div"); list.className="wl-list";
+    WORDLISTS.forEach(function(w){
+      var base=w.file.split("/").pop();
+      var row=document.createElement("div"); row.className="wl-row";
+      row.innerHTML=
+        '<div class="wl-meta"><div class="wl-nm">'+esc(w.name)+'</div>'+
+        '<div class="wl-sub"><b>'+esc(w.size)+'</b> — '+esc(w.desc)+'</div></div>'+
+        '<div class="wl-act">'+
+          '<a class="mini" href="'+esc(w.file)+'" download="'+esc(base)+'">↓ Download</a>'+
+          '<button class="mini wl-box" type="button">⤓ Save to the box</button>'+
+        '</div>';
+      row.querySelector(".wl-box").addEventListener("click",function(){ saveWordlistToBox(w); });
+      list.appendChild(row);
+    });
+    sec.appendChild(list); b.appendChild(sec);
   }
   var appsBuilt=false;
   $("btn-apps").addEventListener("click",function(){ if(!appsBuilt){ buildAppsMenu(); appsBuilt=true; } showDlg($("dlg-apps")); });
@@ -969,7 +1079,12 @@ file *              # ask what each file really is</pre>
   }
 
   // ---- hints: the author's originals, revealed one at a time, each with a cost ----
-  var revealed={}; // challenge id -> highest hint index revealed (-1 = none)
+  //  Reveals persist per browser (like solved state), so the points a hint has
+  //  already cost you — and the score you see — survive a reload.
+  var HINT_STORE="ctf-hints";
+  function loadRevealed(){ try{ return JSON.parse(localStorage.getItem(HINT_STORE))||{}; }catch(e){ return {}; } }
+  function saveRevealed(){ try{ localStorage.setItem(HINT_STORE,JSON.stringify(revealed)); }catch(e){} }
+  var revealed=loadRevealed(); // challenge id -> highest hint index revealed (-1 = none)
   function potentialScore(c){
     var r=(c.id in revealed)?revealed[c.id]:-1, spent=0;
     for(var i=0;i<=r;i++){ spent += (c.hints[i]&&c.hints[i].cost)||0; }
@@ -996,11 +1111,45 @@ file *              # ask what each file really is</pre>
     Array.prototype.forEach.call(h.querySelectorAll("[data-hint]"),function(btn){
       btn.addEventListener("click",function(){
         var i=+btn.dataset.hint, hint=c.hints[i];
-        if(hint.spoiler && !confirm("This hint nearly gives it away (−"+hint.cost+" pts). Reveal it?")) return;
-        revealed[c.id]=i; renderHints(c);
+        // Every hint spends points — confirm before revealing (spoilers get a louder warning).
+        var after=c.base; for(var k=0;k<=i;k++){ after-=(c.hints[k]&&c.hints[k].cost)||0; } after=Math.max(0,after);
+        var q=(hint.spoiler?"This hint nearly gives it away. ":"")+
+              "Reveal Hint "+(i+1)+" for −"+hint.cost+" pts? Your potential score for this challenge drops to "+after+" / "+c.base+".";
+        if(!confirm(q)) return;
+        revealed[c.id]=i; saveRevealed(); renderHints(c); refreshScoreIfOpen();
       });
     });
   }
+
+  // =========================================================================
+  //  SCORE — a per-browser tally: each challenge's base value, points spent on
+  //  hints, whether you've submitted the flag, and the points earned. Nothing is
+  //  sent anywhere; it reads the same stores the flag box (ctf-solved) and the
+  //  hint list (ctf-hints) already write, so it always matches what you see.
+  // =========================================================================
+  function hintsSpent(c){ var r=(c.id in revealed)?revealed[c.id]:-1, s=0; for(var i=0;i<=r;i++){ s+=(c.hints[i]&&c.hints[i].cost)||0; } return s; }
+  function buildScore(){
+    var solved=loadSolved(), rows="", tBase=0, tPot=0, tEarn=0;
+    CH.forEach(function(c){
+      var done=!!solved[c.id], pot=potentialScore(c), spent=hintsSpent(c), earn=done?pot:0;
+      tBase+=c.base; tPot+=pot; tEarn+=earn;
+      rows+='<tr><td class="sc-name">'+esc(c.title)+'</td>'+
+        '<td class="sc-num">'+c.base+'</td>'+
+        '<td class="sc-num">'+(spent?('−'+spent):'—')+'</td>'+
+        '<td class="sc-num">'+pot+'</td>'+
+        '<td class="sc-stat'+(done?' ok':'')+'">'+(done?'✓ Solved':'Unsolved')+'</td>'+
+        '<td class="sc-num sc-earn">'+(done?earn:'—')+'</td></tr>';
+    });
+    $("score-body").innerHTML=
+      '<table class="sc-table"><thead><tr>'+
+        '<th>Challenge</th><th>Base</th><th>Hints</th><th>Potential</th><th>Status</th><th>Earned</th>'+
+      '</tr></thead><tbody>'+rows+'</tbody><tfoot><tr>'+
+        '<td class="sc-name">Total</td><td class="sc-num">'+tBase+'</td><td class="sc-num"></td>'+
+        '<td class="sc-num">'+tPot+'</td><td class="sc-stat"></td><td class="sc-num sc-earn">'+tEarn+'</td>'+
+      '</tr></tfoot></table>';
+  }
+  function refreshScoreIfOpen(){ var d=$("dlg-score"); if(d && d.open) buildScore(); }
+  (function(){ var b=$("btn-score"); if(b) b.addEventListener("click",function(){ buildScore(); showDlg($("dlg-score")); }); })();
 
   // =========================================================================
   //  v86 terminal — the shared 32-bit Linux box (lab image w/ full toolkit)
