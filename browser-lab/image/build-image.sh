@@ -35,6 +35,11 @@ cp "$REPO_ROOT/build/wordlists/trimmed.txt"                                     
 cp "$REPO_ROOT/participant/challenges/03-steganography-lvl-3/Honey.jpeg"            "$PAY/opt/ctf/03-steganography-lvl-3/Honey.jpeg"
 # lvl 3's outer password is spelled out in its brief — it is NOT a wordlist crack, so
 # no wordlist is staged for it (a bundled list made it too easy). lvl 2 still ships one.
+# Kali wordlists at their canonical path (/usr/share/wordlists) so tool defaults resolve
+# and the box reads like real Kali. Same lists the workbench Applications -> Wordlists menu
+# serves (rockyou is the trimmed list; the rest capped ~2 MB). Skips dotfiles (.DS_Store).
+mkdir -p "$PAY/usr/share/wordlists"
+find "$REPO_ROOT/browser-lab/wordlists" -maxdepth 1 -type f ! -name '.*' -exec cp {} "$PAY/usr/share/wordlists/" \;
 find "$PAY" -type f | sort
 
 echo "== 2) secret-scan the payload (must PASS before it goes in an image) =="

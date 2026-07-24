@@ -47,31 +47,37 @@ steghide) via pip.
 
 ## Player files baked in (`/opt/ctf` → `~/challenges`)
 
-`email.eml` (C1), `stego_badger.jpeg` (C2), `Honey.jpeg` (C3), and `wordlist.txt` (the shipped
-trimmed list) stage read-only under `/opt/ctf/<slug>/`; the `ctf` helper copies a challenge's
-files into `~/challenges/<slug>/` on demand. Briefs are shown in the web UI, so the box carries
-only the artifacts. **Nothing from `facilitator/` or the archive.** `build-image.sh`
-runs `build/secret-scan/scan.sh` over the staged payload and refuses to build if it doesn't PASS.
-C4 (the Computer Architecture Warehouse) has no file — it's solved with the companion warehouse game.
+`email.eml` (C1), `stego_badger.jpeg` (C2), and `Honey.jpeg` (C3) stage read-only under
+`/opt/ctf/<slug>/`; the `ctf` helper copies a challenge's files into `~/challenges/<slug>/` on
+demand. `wordlist.txt` (the shipped trimmed rockyou) stages **only for C2** — C3's outer password
+is spelled out in its brief, so bundling a list there made it too easy. Briefs are shown in the web
+UI, so the box carries only the artifacts. **Nothing from `facilitator/` or the archive.**
+`build-image.sh` runs `build/secret-scan/scan.sh` over the staged payload and refuses to build if it
+doesn't PASS. C4 (the Computer Architecture Warehouse) has no file — it's solved with the companion
+warehouse game.
+
+The Kali wordlists shown in the workbench's **Applications → Wordlists** menu are also baked at
+`/usr/share/wordlists/` (from `browser-lab/wordlists/`: rockyou + fasttrack, dirb, dirbuster, nmap,
+john) so tool defaults resolve on the box. The workbench also injects any of them into `~` at runtime
+via v86's `create_file`, so the feature works even on the currently-deployed image.
 
 ## What's verified vs pending
 
-**Verified live this session**
+**Verified live**
 - The i386 toolchain installs and **solves C2 + C3** in a genuine 32-bit container
   (`../feasibility/i386-toolchain-proof.md`).
 - The **base-OS terminal boots and is interactive in-browser** via v86 (busybox, `uname -m = i686`) —
   this proves the engine + harness + serial console end-to-end.
 - The **packaging pipeline** (`docker export` → `fs2json.py` → `copy-to-sha256.py`) runs and produces
   `fs.json` + `flat/`; sizes are printed by `build-image.sh` and recorded in `../ENGINE_DECISION.md`.
+- The **Debian lab image booting root-over-9p in v86** — confirmed in-browser from the deployed image:
+  an interactive Debian shell (`root@chiral-lab`), `/opt/ctf/<slug>` present, the `ctf` helper copying
+  files into `~/challenges/`, and host-side 9p writes (`create_file`) round-tripping. Kernel
+  (`linux-image-686-pae`), the 9p initramfs hook, and serial autologin all work as baked.
 
-**Pending on-deploy verification (documented, not yet booted in a browser here)**
-- The **Debian lab image booting root-over-9p in v86.** Kernel (`linux-image-686`), the 9p initramfs
-  hook, and serial autologin are baked by the Dockerfile, mirroring v86's working `alpine.html`
-  mechanism — but Debian's initramfs mounting `root=host9p` is the one piece not yet booted in-browser
-  in this session. Verify by building, setting `ACTIVE="lab"`, and opening `terminal.html`.
-  - If the 9p-root mount needs tuning, the robust alternative is a **raw ext2 disk image** booted as
-    `hda` (kernel + extlinux inside the image), which sidesteps initramfs-9p entirely; v86 boots such
-    disk images directly (see v86 `docs/archlinux.md`).
+**Fallback if a future kernel/initramfs change breaks the 9p-root mount**
+- Boot a **raw ext2 disk image** as `hda` (kernel + extlinux inside the image), which sidesteps
+  initramfs-9p entirely; v86 boots such disk images directly (see v86 `docs/archlinux.md`).
 
 ## Sizes
 

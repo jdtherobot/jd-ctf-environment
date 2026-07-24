@@ -78,6 +78,10 @@ RUN chmod +x /sbin/lab-init && passwd -d root 2>/dev/null || true
 # ~/challenges. The `ctf` helper (below) copies a challenge's files in on demand
 # — the workbench "Download" button and terminal-only users both call it.
 COPY payload/opt/ /opt/
+# Kali wordlists at their canonical path, so tool defaults resolve (john, crackers,
+# etc.) and the box reads like real Kali. Assembled by build-image.sh into
+# payload/usr/share/wordlists/ (rockyou trimmed; the rest capped ~2 MB).
+COPY payload/usr/share/wordlists/ /usr/share/wordlists/
 COPY overlay/etc/ctf-func.sh /etc/ctf-func.sh
 RUN mkdir -p /root/challenges && chmod -R a-w /opt/ctf 2>/dev/null || true
 RUN printf '\nsource /etc/ctf-func.sh 2>/dev/null\ncd ~/challenges 2>/dev/null\n' >> /root/.bashrc
