@@ -45,17 +45,19 @@ grouped installs are reliable). Exact packages and versions, plus both recovered
 `../feasibility/i386-toolchain-proof.md`. Cracker: **stegcracker** (pure-python wrapper around
 steghide) via pip.
 
-## Player files baked in (`~/challenges`)
+## Player files baked in (`/opt/ctf` → `~/challenges`)
 
-`email.eml`, `stego_badger.jpeg`, `Honey.jpeg`, the four `BRIEF-*.md`, and `wordlist.txt`
-(the shipped trimmed list). **Nothing from `facilitator/` or the archive.** `build-image.sh`
+`email.eml` (C1), `stego_badger.jpeg` (C2), `Honey.jpeg` (C3), and `wordlist.txt` (the shipped
+trimmed list) stage read-only under `/opt/ctf/<slug>/`; the `ctf` helper copies a challenge's
+files into `~/challenges/<slug>/` on demand. Briefs are shown in the web UI, so the box carries
+only the artifacts. **Nothing from `facilitator/` or the archive.** `build-image.sh`
 runs `build/secret-scan/scan.sh` over the staged payload and refuses to build if it doesn't PASS.
-C3 (the Memory Warehouse) has no file — it's solved with the companion warehouse game.
+C4 (the Computer Architecture Warehouse) has no file — it's solved with the companion warehouse game.
 
 ## What's verified vs pending
 
 **Verified live this session**
-- The i386 toolchain installs and **solves C2 + C4** in a genuine 32-bit container
+- The i386 toolchain installs and **solves C2 + C3** in a genuine 32-bit container
   (`../feasibility/i386-toolchain-proof.md`).
 - The **base-OS terminal boots and is interactive in-browser** via v86 (busybox, `uname -m = i686`) —
   this proves the engine + harness + serial console end-to-end.

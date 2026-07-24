@@ -98,7 +98,8 @@ See `feasibility/i386-toolchain-proof.md` for the full captured transcript. Summ
 - Versions (i386 apt): steghide `0.5.1-15`, exiftool `13.25`, openssl `3.5.6`, binwalk `2.4.3`,
   python3 `3.13.5`, file `5.46`, xxd `9.1.1230`, unzip `6.00`, zip `3.0`, coreutils `9.7`.
 - **Solved C2** (crack `password123` → `Flag{DanG 7hat'S @ cUTe HOnEY b@D9eR}`, payload SHA matches)
-  and **C4** (full carve→qtbl.py→openssl chain → `Flag{Y0u haVe EnCouNTeR3d a w!Ld s1eEP p@RA1y$!S DEm0n}`).
+  and **C3** — the Honey multi-carve chain, "C4" before the canonical renumber
+  (full carve→qtbl.py→openssl chain → `Flag{Y0u haVe EnCouNTeR3d a w!Ld s1eEP p@RA1y$!S DEm0n}`).
 - Note: `stegcracker` needs `pip install setuptools` on Python 3.13 (distutils was removed); the recipe
   installs it. C2's crack is proven via the steghide loop stegcracker wraps.
 

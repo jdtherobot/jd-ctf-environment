@@ -1,8 +1,9 @@
 # Hint recommendations — for review, not live
 
-The lab ships **only the hints you originally authored** (Challenge 2 and
-Challenge 3). Challenges 1 and 4 had no author-written player hints in the
-source, so they ship with none.
+The lab ships **only author-written hints** (Challenge 2 and the warehouse —
+now Challenge 4 — plus the canonical cross-challenge "document" hint pulled
+from steganography-ctf). Challenges 1 and 3 had no author-written player hints
+in the source, so they ship with none.
 
 This folder holds a **proposed fuller hint ladder for all four challenges** so
 you can decide what (if anything) to promote into the live lab. Nothing here is
