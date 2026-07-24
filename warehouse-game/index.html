@@ -114,7 +114,7 @@ button{
   padding:3px 10px 4px;
   box-shadow:inset 0 1px 0 var(--steel-hi),0 2px 0 rgba(0,0,0,.35);
 }
-.seg .k{font-size:8px;letter-spacing:.28em;color:#b8c2cc;text-transform:uppercase}
+.seg .k{font-size:8px;letter-spacing:.28em;color:#b8c2cc;text-transform:uppercase;white-space:nowrap}
 .seg .v{
   font-size:16px;font-weight:700;letter-spacing:.08em;color:var(--amber-hi);
   white-space:nowrap;line-height:1.25;
@@ -213,9 +213,46 @@ body.touch .touchctl{display:grid}
 body.touch #keyhint{display:none}
 @media (pointer:coarse){#keyhint{display:none}}
 
+/* ---------- zoom cluster ---------- */
+#zoomctl{
+  position:absolute;right:14px;top:14px;z-index:6;
+  display:flex;flex-direction:column;gap:6px;
+}
+#zoomctl button{
+  width:44px;height:44px;
+  background:rgba(44,51,44,.85);
+  border:1px solid var(--line);
+  color:var(--amber-hi);
+  font-size:20px;font-weight:700;
+  border-radius:4px;
+  user-select:none;-webkit-user-select:none;
+  touch-action:manipulation;
+}
+#zoomctl button:hover{border-color:var(--amber-deep)}
+#zoomctl button:active{background:var(--olive-deep);border-color:var(--amber-deep)}
+#btn-zfit{font-size:9px;letter-spacing:.14em}
+
+/* ---------- page-walk ladder ---------- */
+#walkladder{
+  position:absolute;left:14px;top:14px;z-index:6;
+  background:rgba(23,26,21,.82);
+  border:1px solid var(--line);
+  padding:7px 10px 8px;
+  pointer-events:none;
+  display:flex;flex-direction:column;gap:3px;
+  text-transform:uppercase;
+}
+#walkladder .wl-t{font-size:8px;letter-spacing:.24em;color:var(--text-dim);margin-bottom:2px}
+#walkladder .wl-r{display:flex;align-items:baseline;gap:7px;font-size:10px}
+#walkladder .wl-r span{width:26px;color:var(--amber);font-weight:700;font-size:9px;letter-spacing:.08em}
+#walkladder .wl-r b{width:40px;color:var(--text-dim);font-weight:400;font-size:9px;letter-spacing:.12em}
+#walkladder .wl-r i{font-style:normal;color:var(--amber-hi);font-weight:700;letter-spacing:.06em}
+#walkladder .wl-r i.dim{color:#8fa0ae;font-weight:400}
+@media (max-width:899px),(max-height:539px){#walkladder{display:none}}
+
 /* ---------- overlays & dialogs ---------- */
 .overlay{
-  position:fixed;inset:0;z-index:20;
+  position:fixed;inset:0;z-index:130; /* above the injected site banner (z 100) */
   background:rgba(18,20,17,.72);
   display:grid;place-items:center;
   padding:18px;
@@ -297,6 +334,8 @@ body.touch #keyhint{display:none}
   padding-left:8px;line-height:1.5;
 }
 .lvl-tag b{display:block;color:var(--text);font-size:11px}
+.tierhead{display:flex;gap:10px;padding:0 8px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim)}
+.tierhead span:first-child{flex:none;width:112px}
 .boxrow{display:flex;gap:6px;flex-wrap:wrap}
 .boxbtn{
   width:42px;height:42px;
@@ -395,8 +434,16 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
   #locsign .seg{min-width:56px;padding:3px 6px 4px}
   .seg.zone{min-width:82px}
   .seg .v{font-size:13px}
+  .seg .k{letter-spacing:.12em}
   .brand .sub{display:none}
   .chip{padding:8px 8px 7px;font-size:10px}
+}
+/* phones: let the bar wrap instead of clipping (body overflow is hidden) —
+   brand + actions share the first row, the aisle sign drops to its own row */
+@media (max-width:640px){
+  #topbar{flex-wrap:wrap;gap:8px}
+  #locsign{order:3;flex:1 1 100%;justify-content:flex-start}
+  .actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
 }
 </style>
 </head>
@@ -411,9 +458,9 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
 
     <div id="locsign" aria-hidden="true">
       <div class="seg zone"><span class="k">Zone</span><span class="v" id="seg-zone">RECEIVING</span></div>
-      <div class="seg"><span class="k">Row</span><span class="v" id="seg-row">—</span></div>
-      <div class="seg"><span class="k">Bay</span><span class="v" id="seg-bay">—</span></div>
-      <div class="seg"><span class="k">Sub</span><span class="v" id="seg-sub">—</span></div>
+      <div class="seg"><span class="k">Row · L1</span><span class="v" id="seg-row">—</span></div>
+      <div class="seg"><span class="k">Bay · L3</span><span class="v" id="seg-bay">—</span></div>
+      <div class="seg"><span class="k">Sub · L4</span><span class="v" id="seg-sub">—</span></div>
       <span id="seg-act">PRESS E</span>
     </div>
 
@@ -427,9 +474,23 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
 
   <main id="stage">
     <canvas id="game" tabindex="0"
-      aria-label="Warehouse floor. Move with W A S D or arrow keys, or click a floor tile to walk there. Walk up to a shelf face and press E to inspect it. Your current zone, row, bay and subsection are shown in the sign above."></canvas>
-    <div id="keyhint">WASD / arrows move · E inspect · click to walk</div>
+      aria-label="Warehouse floor. Move with W A S D or arrow keys, or click a floor tile to walk there. Walk up to a shelf face and press E to inspect it. Zoom with plus and minus, press 0 for the full map, or use the zoom buttons at the top right. Your current zone, row, bay and subsection are shown in the sign above."></canvas>
+    <div id="keyhint">WASD / arrows move · E inspect · click to walk · scroll or +/− zoom · 0 full map</div>
     <div id="toast" role="presentation"></div>
+
+    <div id="zoomctl" role="group" aria-label="Zoom">
+      <button id="btn-zin" aria-label="Zoom in">+</button>
+      <button id="btn-zout" aria-label="Zoom out">−</button>
+      <button id="btn-zfit" aria-label="Show full map">FIT</button>
+    </div>
+    <div id="walkladder" aria-hidden="true">
+      <div class="wl-t">Page walk</div>
+      <div class="wl-r"><span>L1</span><b>Row</b><i id="wl-row">—</i></div>
+      <div class="wl-r"><span>L2</span><b>Shelf</b><i id="wl-shelf">—</i></div>
+      <div class="wl-r"><span>L3</span><b>Bay</b><i id="wl-bay">—</i></div>
+      <div class="wl-r"><span>L4</span><b>Sub</b><i id="wl-sub">—</i></div>
+      <div class="wl-r"><span>OFF</span><b>Box</b><i id="wl-box">—</i></div>
+    </div>
 
     <div id="dpad" class="touchctl" aria-label="Movement pad">
       <button class="du" data-dir="up" aria-label="Move up">▲</button>
@@ -454,11 +515,11 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
       <p>Your TLB came back empty, so you are walking this one by hand.</p>
       <p>Resolve the virtual address on paper first, then pull the box it points to:</p>
       <div class="codeblock">VA = 0x0000_0100_4040_1005</div>
-      <div class="codeblock">ROW 1–10
- └ SHELF LEVEL 1 (bottom) – 3 (top)
-    └ BAY 1 (front) / 2 (back)
-       └ SUBSECTION 1–8
-          └ BOX 1–7</div>
+      <div class="codeblock">ROW 1–10                             · L1
+ └ SHELF LEVEL 1 (bottom) – 3 (top)  · L2
+    └ BAY 1 (front) / 2 (back)       · L3
+       └ SUBSECTION 1–8              · L4
+          └ BOX 1–7                  · OFFSET</div>
       <p>Front bays face receiving, where you clock in. Back bays face north. Shelf levels and boxes are not visible from the aisle — walk up to a shelf face and inspect it.</p>
       <p>Wrong box: nothing there. Right box: bring me what is inside.</p>
       <p class="field">— Shift supervisor</p>
@@ -471,7 +532,7 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
 <div class="overlay" id="ov-inspect" hidden>
   <div class="dialog industrial" role="dialog" aria-modal="true" aria-labelledby="inspect-title">
     <h2 id="inspect-title">Row — · Bay — · Subsection —</h2>
-    <p class="subline">Shelf face, viewed straight on. Pick a level and open a box.</p>
+    <p class="subline">Shelf face, viewed straight on. Pick a shelf level (L2), then a box (the offset).</p>
     <div class="facegrid" id="facegrid"></div>
     <div class="inspect-result" id="inspect-result" aria-live="polite"></div>
     <div class="actionsrow"><button class="chip2" data-close data-autofocus>Step back (Esc)</button></div>
@@ -531,10 +592,11 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
         <tr><td>Click / tap a floor tile</td><td>walk there</td></tr>
         <tr><td>Click / tap a shelf</td><td>walk to it, then open that face</td></tr>
         <tr><td><span class="kbd">Esc</span></td><td>close a panel</td></tr>
+        <tr><td><span class="kbd">+</span> / <span class="kbd">−</span> / scroll · <span class="kbd">0</span></td><td>zoom in / out · fit the whole map (buttons at top right)</td></tr>
         <tr><td>On-screen pad + INSPECT</td><td>touch controls (shown on touch screens)</td></tr>
       </table>
       <div class="rule"></div>
-      <p><b>Reading an address.</b> ROW 1–10 are the shelf units, numbered from receiving. Each unit has BAY 1 on its front face (toward receiving) and BAY 2 on its back face (toward the north walkway). SUBSECTIONS 1–8 run west → east and are stenciled on the floor. Inspecting a face shows SHELF LEVELS 1 (bottom) – 3 (top), each holding BOXES 1–7.</p>
+      <p><b>Reading an address.</b> ROW 1–10 (walk tier L1) are the shelf units, numbered from receiving. Each unit has BAY 1 on its front face (toward receiving) and BAY 2 on its back face (L3). SUBSECTIONS 1–8 (L4) run west → east and are stenciled on the floor. Inspecting a face shows SHELF LEVELS 1 (bottom) – 3 (top) (L2), each holding BOXES 1–7 — the box number is the OFFSET, the last step of the walk.</p>
       <p>The sign at the top of the screen always shows the zone, row, bay and subsection you are standing at.</p>
       <div class="rule"></div>
       <p>No timer, no fail state, nothing chasing you. Sound is off by default; a reduced-motion mode is in Settings. Reset (top right) returns you to receiving and empties the inventory.</p>
@@ -601,7 +663,8 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
    ========================================================================= */
 const TS=32;                        // tile size, world px
 const GW=34, GH=58;                 // grid width/height in tiles
-const ZOOM=2;                       // world px -> css px
+const ZOOM_MAX=3, ZOOM_DEF=.75;     // css px per world px: close-up ceiling & boot value
+let zoom=ZOOM_DEF, zoomMin=.2;      // boot zoomed out (many rows visible); zoomMin = fit-whole-map floor, set in resize()
 const ROWS=10, SUBS=8, LEVELS=3, BOXES=7;
 const UNIT_X0=5, UNIT_X1=28;        // shelf unit column span (inclusive)
 const SPAWN={x:17.5*TS, y:54.5*TS};
@@ -948,6 +1011,11 @@ addEventListener('keydown',e=>{
   }
   const t=e.target&&e.target.tagName;
   const onCtl=t==='BUTTON'||t==='INPUT'||t==='A'||t==='SELECT'||t==='TEXTAREA';
+  if(!onCtl){
+    if(e.code==='Equal'||e.code==='NumpadAdd'){e.preventDefault();applyZoom(zoom*1.25);return;}
+    if(e.code==='Minus'||e.code==='NumpadSubtract'){e.preventDefault();applyZoom(zoom/1.25);return;}
+    if(e.code==='Digit0'||e.code==='Numpad0'){e.preventDefault();applyZoom(zoomMin);announceZoom('Full map');return;}
+  }
   if(KEYMAP[e.code]&&!(t==='INPUT'||t==='TEXTAREA')){
     keys[KEYMAP[e.code]]=true;cancelPath();e.preventDefault();return;
   }
@@ -978,7 +1046,7 @@ canvas.addEventListener('pointerdown',e=>{
   if(openOverlay)return;
   canvas.focus({preventScroll:true});
   const r=canvas.getBoundingClientRect();
-  const wx=cam.x+(e.clientX-r.left)/ZOOM, wy=cam.y+(e.clientY-r.top)/ZOOM;
+  const wx=cam.x+(e.clientX-r.left)/zoom, wy=cam.y+(e.clientY-r.top)/zoom;
   const t=tileOf(wx,wy);
   if(!inGrid(t.x,t.y))return;
   const p0=tileOf(player.x,player.y);
@@ -999,6 +1067,36 @@ canvas.addEventListener('pointerdown',e=>{
     if(pth){path=pth;pendingInspect=null;marker={x:t.x*TS+TS/2,y:t.y*TS+TS/2};}
   }
 });
+
+/* zoom: wheel, buttons, keys. Changes are instant (no tween) — the existing
+   camera lerp supplies any easing and already snaps under reduced motion. */
+function camClamp(v,view,len){return view>=len?(len-view)/2:clamp(v,0,len-view);}
+let zoomSRT=0;
+function announceZoom(msg){
+  clearTimeout(zoomSRT);
+  zoomSRT=setTimeout(()=>{srStatus.textContent=msg||('Zoom '+Math.round(zoom*100)+'%');},200);
+}
+function applyZoom(z,ax,ay){             // ax,ay: anchor point in canvas css px
+  z=clamp(z,zoomMin,ZOOM_MAX);
+  if(z===zoom)return;
+  if(ax===undefined){ax=cw/2;ay=ch/2;}
+  const wx=cam.x+ax/zoom, wy=cam.y+ay/zoom;   // world pt under anchor (same math as click-to-walk)
+  zoom=z;
+  cam.x=camClamp(wx-ax/zoom,cw/zoom,GW*TS);
+  cam.y=camClamp(wy-ay/zoom,ch/zoom,GH*TS);
+  announceZoom();
+}
+canvas.addEventListener('wheel',e=>{
+  if(openOverlay)return;
+  e.preventDefault();                       // also eats ctrl+wheel = trackpad pinch page-zoom
+  const dy=e.deltaMode===1?e.deltaY*33:(e.deltaMode===2?e.deltaY*300:e.deltaY);
+  const r=canvas.getBoundingClientRect();
+  applyZoom(zoom*Math.exp(-dy*.0014),e.clientX-r.left,e.clientY-r.top);
+},{passive:false});
+canvas.addEventListener('gesturestart',e=>e.preventDefault());  // Safari-only pinch guard
+$('#btn-zin').addEventListener('click',()=>applyZoom(zoom*1.25));
+$('#btn-zout').addEventListener('click',()=>applyZoom(zoom/1.25));
+$('#btn-zfit').addEventListener('click',()=>{applyZoom(zoomMin);announceZoom('Full map');});
 
 function arriveInspect(){
   if(!pendingInspect)return;
@@ -1028,6 +1126,7 @@ function interact(){
    7. HUD sign + announcements
    ========================================================================= */
 const segZone=$('#seg-zone'),segRow=$('#seg-row'),segBay=$('#seg-bay'),segSub=$('#seg-sub'),segAct=$('#seg-act');
+const wlRow=$('#wl-row'),wlShelf=$('#wl-shelf'),wlBay=$('#wl-bay'),wlSub=$('#wl-sub'),wlBox=$('#wl-box');
 const srStatus=$('#sr-status');
 let lastFaceKey='',toastTimer=0;
 
@@ -1049,11 +1148,15 @@ function updateHUD(){
   setSeg(segRow,f?String(f.row):'—');
   setSeg(segBay,f?(f.bay===1?'1 · FRONT':'2 · BACK'):'—');
   setSeg(segSub,f?String(f.sub):'—');
+  setSeg(wlRow,f?String(f.row):'—');
+  setSeg(wlBay,f?(f.bay===1?'1 · F':'2 · B'):'—');
+  setSeg(wlSub,f?String(f.sub):'—');
   segAct.classList.toggle('on',!!f);
   segAct.textContent=document.body.classList.contains('touch')?'TAP INSPECT':'PRESS E';
   const key=f?f.row+'-'+f.bay+'-'+f.sub:'';
   if(key!==lastFaceKey){
     lastFaceKey=key;
+    setSeg(wlShelf,'—');setSeg(wlBox,'—');   // tried L2/offset reset when the face changes
     if(f)srStatus.textContent='Row '+f.row+', bay '+f.bay+(f.bay===1?' front':' back')+', subsection '+f.sub+'. Press E to inspect.';
   }
 }
@@ -1122,14 +1225,14 @@ let currentFace=null;
 
 function openInspect(f){
   currentFace=f;
-  inspectTitle.textContent='Row '+f.row+' · Bay '+f.bay+(f.bay===1?' (front)':' (back)')+' · Subsection '+f.sub;
+  inspectTitle.textContent='L1 Row '+f.row+' · L3 Bay '+f.bay+(f.bay===1?' (front)':' (back)')+' · L4 Sub '+f.sub;
   inspectResult.textContent='';
-  let html='';
+  let html='<div class="tierhead" aria-hidden="true"><span></span><span>Offset · box 1–7</span></div>';
   for(let lvl=LEVELS;lvl>=1;lvl--){
     const tag=lvl===LEVELS?'top':(lvl===1?'bottom':'middle');
-    html+='<div class="lvl"><span class="lvl-tag">Level<b>'+lvl+' · '+tag+'</b></span><span class="boxrow">';
+    html+='<div class="lvl"><span class="lvl-tag">L2 · shelf level<b>'+lvl+' · '+tag+'</b></span><span class="boxrow">';
     for(let b=1;b<=BOXES;b++){
-      html+='<button class="boxbtn" data-l="'+lvl+'" data-b="'+b+'" aria-label="Open box '+b+', shelf level '+lvl+'">'+b+'</button>';
+      html+='<button class="boxbtn" data-l="'+lvl+'" data-b="'+b+'" aria-label="Open box '+b+' (offset), shelf level '+lvl+' (L2)">'+b+'</button>';
     }
     html+='</span></div>';
   }
@@ -1141,6 +1244,7 @@ faceGrid.addEventListener('click',e=>{
   const btn=e.target.closest('.boxbtn');
   if(!btn||!currentFace)return;
   const lvl=+btn.dataset.l,box=+btn.dataset.b,f=currentFace;
+  setSeg(wlShelf,String(lvl));setSeg(wlBox,String(box));
   if(isTarget(f.row,lvl,f.bay,f.sub,box)){
     if(!found){
       found=true;
@@ -1210,6 +1314,8 @@ function resize(){
   dpr=Math.min(2,window.devicePixelRatio||1);
   cw=Math.round(r.width);ch=Math.round(r.height);
   canvas.width=cw*dpr;canvas.height=ch*dpr;
+  zoomMin=Math.max(.05,Math.min(cw/(GW*TS),ch/(GH*TS)));  // fit-whole-map floor
+  zoom=clamp(zoom,zoomMin,ZOOM_MAX);
 }
 addEventListener('resize',()=>{resize();checkSmall();});
 
@@ -1243,10 +1349,10 @@ function update(dt){
   else{player.frame=0;player.animT=0;}
   if(player.moving!==wasMoving||player.moving)updateHUD();
 
-  // camera
-  const vw=cw/ZOOM,vh=ch/ZOOM;
-  const txc=clamp(player.x-vw/2,0,Math.max(0,GW*TS-vw));
-  const tyc=clamp(player.y-vh/2,0,Math.max(0,GH*TS-vh));
+  // camera (centers the world when the viewport is larger than it)
+  const vw=cw/zoom,vh=ch/zoom;
+  const txc=camClamp(player.x-vw/2,vw,GW*TS);
+  const tyc=camClamp(player.y-vh/2,vh,GH*TS);
   if(!cam.init||settings.rm){cam.x=txc;cam.y=tyc;cam.init=true;}
   else{
     const k=1-Math.pow(.001,dt);   // smooth follow
@@ -1258,11 +1364,11 @@ let pulse=0;
 function render(t){
   pulse=settings.rm?1:.6+.4*Math.sin(t/280);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.imageSmoothingEnabled=false;
+  ctx.imageSmoothingEnabled=zoom<1;   // crisp nearest at >=1, smoothed when zoomed out
   ctx.fillStyle='#20241f';ctx.fillRect(0,0,cw,ch);
-  const camX=Math.round(cam.x*ZOOM)/ZOOM, camY=Math.round(cam.y*ZOOM)/ZOOM;
+  const camX=Math.round(cam.x*zoom)/zoom, camY=Math.round(cam.y*zoom)/zoom;
   ctx.save();
-  ctx.scale(ZOOM,ZOOM);
+  ctx.scale(zoom,zoom);
   ctx.translate(-camX,-camY);
   ctx.drawImage(world,0,0);
 

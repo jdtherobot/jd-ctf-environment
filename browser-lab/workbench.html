@@ -46,6 +46,7 @@
   .tab.active{color:var(--ink);border-color:color-mix(in srgb,var(--accent) 60%,var(--line));
     background:color-mix(in srgb,var(--accent) 10%,transparent)}
   .tab.active .idx{color:var(--accent)}
+  @media (max-width:640px){ .tabs{gap:4px} .tab{padding:4px 8px;font-size:11px;gap:6px} }
 
   .tb{font:600 12.5px/1 var(--sans);background:transparent;color:var(--ink);border:1px solid var(--line);
     border-radius:9px;padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
@@ -88,7 +89,7 @@
   .md strong{color:var(--ink);font-weight:700}
   .md em{color:var(--accent-2);font-style:italic}
   .md a{text-decoration:underline}
-  .md code{font-family:var(--mono);font-size:12.5px;background:#0b100d;border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:var(--ink)}
+  .md code{font-family:var(--mono);font-size:12.5px;background:#0b100d;border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:var(--ink);overflow-wrap:anywhere}
   .md pre{background:#0b100d;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:0 0 14px}
   .md pre code{background:transparent;border:0;padding:0;font-size:12.5px;color:var(--ink-dim);white-space:pre}
   .md blockquote{margin:0 0 14px;padding:8px 14px;border-left:3px solid var(--accent-2);
