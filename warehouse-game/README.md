@@ -2,7 +2,7 @@
 
 A top-down, navigable warehouse: the immersion layer for **Challenge 4 (Computer Architecture Warehouse)**.
 Your page-table walk resolves the virtual address in the briefing to a physical location —
-row, shelf level, bay, subsection, box. Walk the floor, find the face, open the box.
+row, bay, shelf level, subsection, box. Walk the floor, find the face, open the box.
 The right box holds a field note you can view in-game and download; every other box is
 "Nothing here."
 
@@ -34,10 +34,14 @@ The header has Inventory (records the recovered note), Help, Settings, and Reset
 
 ## Layout key
 
-- **ROW 1–10**: shelf units, numbered from receiving (the spawn area).
-- **BAY 1 (front)** faces receiving; **BAY 2 (back)** faces the north walkway.
-- **SUBSECTION 1–8**: west → east, stenciled on the floor along each face.
-- **SHELF LEVEL 1 (bottom) – 3 (top)** and **BOX 1–7**: visible when you inspect a face.
+- **ROW 1–10 (L1)**: shelf units, numbered from receiving (the spawn area).
+- **BAY 1 (front) / BAY 2 (back) (L2)**: front faces receiving; back faces the north walkway.
+- **SHELF LEVEL 1 (bottom) – 3 (top) (L3)**: visible when you inspect a face.
+- **SUBSECTION 1–8 (L4)**: west → east, stenciled on the floor along each face.
+- **BOX 1–7 (the offset)**: in the inspect view, seven per shelf level.
+
+Level numbers match the page-table reference document: Level 4 is the top
+9 bits of the VA, Level 1 the lowest 9 above the offset.
 
 ## Accessibility
 

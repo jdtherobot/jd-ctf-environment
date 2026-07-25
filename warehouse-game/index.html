@@ -464,7 +464,7 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
     <div id="locsign" aria-hidden="true">
       <div class="seg zone"><span class="k">Zone</span><span class="v" id="seg-zone">RECEIVING</span></div>
       <div class="seg"><span class="k">Row · L1</span><span class="v" id="seg-row">—</span></div>
-      <div class="seg"><span class="k">Bay · L3</span><span class="v" id="seg-bay">—</span></div>
+      <div class="seg"><span class="k">Bay · L2</span><span class="v" id="seg-bay">—</span></div>
       <div class="seg"><span class="k">Sub · L4</span><span class="v" id="seg-sub">—</span></div>
       <span id="seg-act">PRESS E</span>
     </div>
@@ -491,8 +491,8 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
     <div id="walkladder" aria-hidden="true">
       <div class="wl-t">Page walk</div>
       <div class="wl-r"><span>L1</span><b>Row</b><i id="wl-row">—</i></div>
-      <div class="wl-r"><span>L2</span><b>Shelf</b><i id="wl-shelf">—</i></div>
-      <div class="wl-r"><span>L3</span><b>Bay</b><i id="wl-bay">—</i></div>
+      <div class="wl-r"><span>L2</span><b>Bay</b><i id="wl-bay">—</i></div>
+      <div class="wl-r"><span>L3</span><b>Shelf</b><i id="wl-shelf">—</i></div>
       <div class="wl-r"><span>L4</span><b>Sub</b><i id="wl-sub">—</i></div>
       <div class="wl-r"><span>OFF</span><b>Box</b><i id="wl-box">—</i></div>
     </div>
@@ -520,11 +520,11 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
       <p>Your TLB came back empty, so you are walking this one by hand.</p>
       <p>Resolve the virtual address on paper first, then pull the box it points to:</p>
       <div class="codeblock">VA = 0x0000_0100_4040_1005</div>
-      <div class="codeblock">ROW 1–10                             · L1
- └ SHELF LEVEL 1 (bottom) – 3 (top)  · L2
-    └ BAY 1 (front) / 2 (back)       · L3
-       └ SUBSECTION 1–8              · L4
-          └ BOX 1–7                  · OFFSET</div>
+      <div class="codeblock">ROW 1–10                               · L1
+ └ BAY 1 (front) / 2 (back)            · L2
+    └ SHELF LEVEL 1 (bottom) – 3 (top) · L3
+       └ SUBSECTION 1–8                · L4
+          └ BOX 1–7                    · OFFSET</div>
       <p>Front bays face receiving, where you clock in. Back bays face north. Shelf levels and boxes are not visible from the aisle — walk up to a shelf face and inspect it.</p>
       <p>Wrong box: nothing there. Right box: bring me what is inside.</p>
       <p class="field">— Shift supervisor</p>
@@ -537,7 +537,7 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
 <div class="overlay" id="ov-inspect" hidden>
   <div class="dialog industrial" role="dialog" aria-modal="true" aria-labelledby="inspect-title">
     <h2 id="inspect-title">Row — · Bay — · Subsection —</h2>
-    <p class="subline">Shelf face, viewed straight on. Pick a shelf level (L2), then a box (the offset).</p>
+    <p class="subline">Shelf face, viewed straight on. Pick a shelf level (L3), then a box (the offset).</p>
     <div class="facegrid" id="facegrid"></div>
     <div class="inspect-result" id="inspect-result" aria-live="polite"></div>
     <div class="actionsrow"><button class="chip2" data-close data-autofocus>Step back (Esc)</button></div>
@@ -601,7 +601,7 @@ body.rm .dialog,body.rm .stamp,body.rm #toast{animation:none!important;transitio
         <tr><td>On-screen pad + INSPECT</td><td>touch controls (shown on touch screens)</td></tr>
       </table>
       <div class="rule"></div>
-      <p><b>Reading an address.</b> ROW 1–10 (walk tier L1) are the shelf units, numbered from receiving. Each unit has BAY 1 on its front face (toward receiving) and BAY 2 on its back face (L3). SUBSECTIONS 1–8 (L4) run west → east and are stenciled on the floor. Inspecting a face shows SHELF LEVELS 1 (bottom) – 3 (top) (L2), each holding BOXES 1–7 — the box number is the OFFSET, the last step of the walk.</p>
+      <p><b>Reading an address.</b> ROW 1–10 (walk tier L1) are the shelf units, numbered from receiving. Each unit has BAY 1 on its front face (toward receiving) and BAY 2 on its back face (L2). Inspecting a face shows SHELF LEVELS 1 (bottom) – 3 (top) (L3). SUBSECTIONS 1–8 (L4) run west → east and are stenciled on the floor. Each shelf level holds BOXES 1–7 — the box number is the OFFSET, the last step of the walk. Level numbers match the page-table reference: Level 4 is the top 9 bits of the VA, Level 1 the lowest.</p>
       <p>The sign at the top of the screen always shows the zone, row, bay and subsection you are standing at.</p>
       <div class="rule"></div>
       <p>No timer, no fail state, nothing chasing you. Sound is off by default; a reduced-motion mode is in Settings. Reset (top right) returns you to receiving and empties the inventory.</p>
@@ -688,7 +688,7 @@ const EMBED=document.documentElement.hasAttribute('data-embed');
    coordinates are never stored in the clear; the entered location is hashed
    (FNV-1a) and compared against a constant. A static page cannot enforce a
    puzzle; this just keeps the answer out of a casual text search. */
-const T_LOC=0xdc4a4420;
+const T_LOC=0x39f3d238;
 function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h>>>0;}
 const isTarget=(r,s,b,u,x)=>fnv('R'+r+'S'+s+'B'+b+'U'+u+'X'+x)===T_LOC;
 
@@ -857,9 +857,15 @@ world.width=GW*TS; world.height=GH*TS;
       g.strokeStyle='#2a3138'; g.lineWidth=1; g.strokeRect(sx+.5,sy+.5,67,21);
       stencil('ROW '+i,sx+34,sy+13,11,C.amberHi,1);
     });
-    // end-cap floor markers
-    stencil('R'+i,3.4*TS,(t+1)*TS,10,C.amber,1);
-    stencil('R'+i,(UNIT_X1+2.6)*TS,(t+1)*TS,10,C.amber,1);
+    // end-cap row badges — sign plates (not bare paint) so the row is
+    // readable at the zoomed-out default
+    [3.1*TS,(UNIT_X1+2.9)*TS].forEach(cx2=>{
+      const sx=cx2-21, sy=(t+1)*TS-11;
+      g.fillStyle=C.sign; g.fillRect(sx,sy,42,22);
+      g.fillStyle=C.amber; g.fillRect(sx,sy,42,3);
+      g.strokeStyle='#2a3138'; g.lineWidth=1; g.strokeRect(sx+.5,sy+.5,41,21);
+      stencil('R'+i,cx2,sy+15,13,C.amberHi,1);
+    });
 
     /* --- per-face floor markings --- */
     [['S',(t+2)*TS,1],['N',(t-1)*TS,2]].forEach(([side,fy,bay])=>{
@@ -877,12 +883,15 @@ world.width=GW*TS; world.height=GH*TS;
         stencil(String(s2),cx,ny,12,C.amber,0);
       }
       g.fillRect((UNIT_X1+1)*TS-2,lineY-4,2,8);
-      // bay painted labels, centered in the gaps between numerals
-      // (row identity is on the hanging signs and end caps)
+      // bay placards — dark plates in the numeral gaps, in their own hue,
+      // so BAY (L2) never reads as another subsection numeral
       const ly=side==='S'?fy+16:fy+TS-16;
       const bayTxt=bay===1?'BAY 1 · FRONT':'BAY 2 · BACK';
-      stencil(bayTxt,11*TS,ly,8,C.paintDim,1);
-      stencil(bayTxt,23*TS,ly,8,C.paintDim,1);
+      [11*TS,23*TS].forEach(cx2=>{
+        g.fillStyle='#20262c'; g.fillRect(cx2-40,ly-9,80,13);
+        g.strokeStyle='#39434c'; g.lineWidth=1; g.strokeRect(cx2-39.5,ly-8.5,79,12);
+        stencil(bayTxt,cx2,ly+1,8,'#9fc3d8',1);
+      });
     });
   }
 
@@ -899,8 +908,9 @@ world.width=GW*TS; world.height=GH*TS;
 
   /* --- receiving paint --- */
   stencil('R E C E I V I N G',17*TS,55.1*TS,15,C.paint,3);
-  stencil('SHELF LEVELS: 1 = BOTTOM → 3 = TOP',17*TS,52.45*TS,9,C.paintDim,1);
-  stencil('FRONT BAYS FACE RECEIVING · BACK BAYS FACE NORTH',17*TS,53.3*TS,8,C.paintDim,1);
+  stencil('SHELF LEVELS: 1 = BOTTOM → 3 = TOP · L3',17*TS,52.45*TS,9,C.paintDim,1);
+  stencil('FRONT BAYS FACE RECEIVING · BACK BAYS FACE NORTH · L2',17*TS,53.3*TS,8,C.paintDim,1);
+  stencil('WALK: L1 ROW → L2 BAY → L3 SHELF → L4 SUB → BOX = OFFSET',17*TS,54.15*TS,9,C.paint,1);
   // north walkway paint
   stencil('N',17*TS,1.55*TS,12,C.paintDim,0);
   stencil('▲',17*TS,2.2*TS,9,C.paintDim,0);
@@ -1231,14 +1241,14 @@ let currentFace=null;
 
 function openInspect(f){
   currentFace=f;
-  inspectTitle.textContent='L1 Row '+f.row+' · L3 Bay '+f.bay+(f.bay===1?' (front)':' (back)')+' · L4 Sub '+f.sub;
+  inspectTitle.textContent='L1 Row '+f.row+' · L2 Bay '+f.bay+(f.bay===1?' (front)':' (back)')+' · L4 Sub '+f.sub;
   inspectResult.textContent='';
   let html='<div class="tierhead" aria-hidden="true"><span></span><span>Offset · box 1–7</span></div>';
   for(let lvl=LEVELS;lvl>=1;lvl--){
     const tag=lvl===LEVELS?'top':(lvl===1?'bottom':'middle');
-    html+='<div class="lvl"><span class="lvl-tag">L2 · shelf level<b>'+lvl+' · '+tag+'</b></span><span class="boxrow">';
+    html+='<div class="lvl"><span class="lvl-tag">L3 · shelf level<b>'+lvl+' · '+tag+'</b></span><span class="boxrow">';
     for(let b=1;b<=BOXES;b++){
-      html+='<button class="boxbtn" data-l="'+lvl+'" data-b="'+b+'" aria-label="Open box '+b+' (offset), shelf level '+lvl+' (L2)">'+b+'</button>';
+      html+='<button class="boxbtn" data-l="'+lvl+'" data-b="'+b+'" aria-label="Open box '+b+' (offset), shelf level '+lvl+' (L3)">'+b+'</button>';
     }
     html+='</span></div>';
   }
