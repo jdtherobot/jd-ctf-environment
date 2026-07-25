@@ -44,8 +44,8 @@ hints:[
 
 ```js
 hints:[
-  { cost:50, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = shelf level (bottom = 1 → top = 3); L3 = bay depth (front = 1, back = 2); L4 = sub-section of that bay’s grate; and the offset = the box number." },
-  { cost:75, spoiler:true, body:"Split the low 48 bits of the VA into [L1 9][L2 9][L3 9][L4 9][OFFSET 12]. Walk level by level (L1 → L4), then use the offset to pick the exact box." },
-  { cost:120, spoiler:true, body:"It resolves to row 2, shelf level 1 (bottom), back bay (2), sub-section 1, box 5. The note there is a four-square cipher keyed by its four corner words; the ciphertext is line 9 of the document Challenge 2 gave you." }
+  { cost:50, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = bay depth (front = 1, back = 2); L3 = shelf level (bottom = 1 → top = 3); L4 = sub-section of that bay’s grate; and the offset = the box number." },
+  { cost:75, spoiler:true, body:"Split the low 48 bits of the VA into [L4 9][L3 9][L2 9][L1 9][OFFSET 12] — the top group is Level 4, exactly as in the page-table document. Then walk the floor L1 → L4 (row → bay → shelf → sub) and let the offset pick the box." },
+  { cost:120, spoiler:true, body:"It resolves to row 1, back bay (2), shelf level 1 (bottom), sub-section 2, box 5. The note there is a four-square cipher keyed by its four corner words; the ciphertext is line 9 of the document Challenge 2 gave you." }
 ]
 ```

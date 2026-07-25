@@ -116,7 +116,7 @@ page (they read the same field). Commit + push the site to deploy.
 
 ## Verify
 - `https://britt.gg/jd-ctf-environment/` loads the landing.
-- Warehouse game plays; the correct box (row 2 · shelf 1 · bay 2 · subsection 1 · box 5) reveals the note.
+- Warehouse game plays; the correct box (row 1 · back bay · shelf 1 · subsection 2 · box 5) reveals the note.
 - Once the image is built, the lab terminal boots a 32-bit shell with the challenge files under
   `~/challenges/`.
 - On britt.gg, "Launch challenges" (flagship + every writeup tab) opens the environment.
