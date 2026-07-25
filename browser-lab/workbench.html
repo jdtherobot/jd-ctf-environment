@@ -251,6 +251,8 @@
   .sc-stat.ok{color:var(--accent)}
   .sc-earn{color:var(--accent)}
   .sc-table tfoot .sc-earn{font-weight:700}
+  #btn-score-reset{color:var(--ink-dim)}
+  #btn-score-reset:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 55%,var(--line))}
 
   /* ---- download-to-box button ---- */
   .btn-dl{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;
@@ -406,7 +408,10 @@
     <h3>◆ Your score</h3>
     <p class="muted" style="margin-bottom:14px">Saved automatically in this browser. Every hint you open spends points; a challenge banks its remaining points once you submit the correct flag.</p>
     <div id="score-body"></div>
-    <div class="row"><button class="btn btn-primary" data-close>Close</button></div>
+    <div class="row" style="justify-content:space-between">
+      <button class="btn btn-ghost" id="btn-score-reset" type="button">↺ Reset progress</button>
+      <button class="btn btn-primary" data-close>Close</button>
+    </div>
   </div>
 </dialog>
 
@@ -1022,7 +1027,6 @@ file *              # ask what each file really is</pre>
     var banner=document.createElement("div"); banner.className="apps-banner";
     banner.innerHTML='<span>✓</span><span><b>Every tool you need is installed and working.</b> Browse the full Kali toolkit below.</span>';
     b.appendChild(banner);
-    renderWordlists(b);
     KALI.forEach(function(g){
       var sec=document.createElement("div"); sec.className="apps-cat";
       sec.innerHTML='<div class="apps-cat-h">'+esc(g.cat)+'</div>';
@@ -1035,6 +1039,7 @@ file *              # ask what each file really is</pre>
       });
       sec.appendChild(grid); b.appendChild(sec);
     });
+    renderWordlists(b);   // Wordlists section renders at the bottom of the toolkit
   }
 
   // The Wordlists section of ▦ Applications: each list downloads to your machine
@@ -1150,7 +1155,19 @@ file *              # ask what each file really is</pre>
       '</tr></tfoot></table>';
   }
   function refreshScoreIfOpen(){ var d=$("dlg-score"); if(d && d.open) buildScore(); }
-  (function(){ var b=$("btn-score"); if(b) b.addEventListener("click",function(){ buildScore(); showDlg($("dlg-score")); }); })();
+  // Reset wipes solved state + revealed hints so every challenge is worth its full
+  // base again and its flag can be resubmitted. Confirmed first — it can't be undone.
+  function resetProgress(){
+    if(!confirm("Reset your progress?\n\nThis clears the points and solved status for every challenge. You'll be able to resubmit flags and work through them again. This can't be undone.")) return;
+    try{ localStorage.removeItem(FLAG_STORE); localStorage.removeItem(HINT_STORE); }catch(e){}
+    revealed={};
+    buildScore();
+    var c=CH[current]; if(c){ renderFlag(c); renderHints(c); }
+  }
+  (function(){
+    var b=$("btn-score"); if(b) b.addEventListener("click",function(){ buildScore(); showDlg($("dlg-score")); });
+    var r=$("btn-score-reset"); if(r) r.addEventListener("click",resetProgress);
+  })();
 
   // =========================================================================
   //  v86 terminal — the shared 32-bit Linux box (lab image w/ full toolkit)
