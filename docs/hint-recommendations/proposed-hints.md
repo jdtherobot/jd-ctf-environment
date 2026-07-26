@@ -40,7 +40,7 @@ hints:[
 ]
 ```
 
-## Challenge 4 — Computer Architecture Warehouse (base 300) — *live: the originals + the canonical document hint*
+## Challenge 4 — Computer Architecture Warehouse (base 400) — *live: the originals + the canonical document hint*
 
 ```js
 hints:[

@@ -23,8 +23,9 @@ live until you move it.
 No per-hint point values survived in the repo — in the original CTFd they were
 each hint's **Value** field (your screenshot shows one at `50`). The costs in
 the live lab and in `proposed-hints.md` are **placeholders** scaled to each
-challenge's base (100 / 200 / 300 / 500 from `PLAN.md`) and to how much each
-hint gives away. Drop in your real numbers when you have them.
+challenge's base (100 / 200 / 500 / 400 for C1→C4, as set in the workbench)
+and to how much each hint gives away. Drop in your real numbers when you
+have them.
 
 ## How to promote a proposed ladder
 
