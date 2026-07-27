@@ -36,3 +36,6 @@ __pycache__/
 .venv/
 node_modules/
 *.log
+
+# --- Local Claude Code / agent config (not part of the site) ---
+.claude/

@@ -56,7 +56,8 @@ published with GitHub Pages lands at a **project-pages subpath under the same do
 
 ## Step 1 — Add a root landing (the page "Launch challenges" opens)
 
-This repo has no root `index.html` yet. Add one that offers the two surfaces. Minimal version:
+The repo already ships a root `index.html` — the chooser landing that offers the two surfaces. For a
+from-scratch setup, a minimal equivalent is:
 
 ```html
 <!doctype html>
@@ -79,9 +80,6 @@ This repo has no root `index.html` yet. Add one that offers the two surfaces. Mi
 </div>
 ```
 
-(Long-term, the goal is to launch the warehouse game **from inside** the lab environment; for now the
-landing is the simplest bridge.)
-
 ## Step 2 — Build the lab disk image (for the terminal)
 
 Follow [`browser-lab/image/README.md`](browser-lab/image/README.md): `build-image.sh` bakes the
@@ -90,8 +88,8 @@ The boot kernel is fetched into `vendor/` (both are gitignored by size). For hos
 - **Commit the built artifacts** (`image/dist/` + `vendor/*.bin`) so Pages serves them directly, or
 - Keep them out of git and add a build step that produces them into `dist/` before publish.
 
-Until this is done, ship Step 1's landing with the **warehouse game live** and the lab as "coming
-online" — the game alone is a complete, self-contained Challenge 4 experience.
+Both the **warehouse game** and the lab terminal are now **live** — and the game alone is still a
+complete, self-contained Challenge 4 experience.
 
 ## Step 3 — Publish with GitHub Pages
 

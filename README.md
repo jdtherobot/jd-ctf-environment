@@ -17,7 +17,7 @@ browser-lab/         In-browser 32-bit Linux lab (v86 + xterm). Chooser landing,
                      the disk-image build recipe, and the i386 toolchain feasibility proof.
 warehouse-game/      The top-down warehouse (Challenge 4's clue delivery). Self-contained static site.
 deploy/lab/          Hosting configs for the lab (COOP/COEP headers for CheerpX; v86 needs none).
-participant/         ⚠ Lab INPUTS ONLY — the sanitized player files the lab image bakes in
+participant/         Lab INPUTS ONLY — the sanitized player files the lab image bakes in
 build/               (challenge files + briefs + trimmed wordlist + the secret-scan gate).
                      These are copies; the authoritative originals live in steganography-ctf.
 ```
@@ -54,10 +54,10 @@ Challenges 2 and 3 inside a real 32-bit container (`browser-lab/feasibility/i386
 `browser-lab/ENGINE_DECISION.md` recommends **v86 + GitHub Pages** (no special headers) now, with
 **CheerpX + Cloudflare Pages** (`deploy/lab/_headers`) as the GUI upgrade path. See `deploy/lab/README.md`.
 
-## Roadmap
+## Warehouse game
 
-The near-term goal is to launch the warehouse game **from inside** the browser environment, so a
-player does all of Challenge 4 in one place. For now the game is a standalone site the CTF links to.
+The warehouse game runs **embedded in the workbench** on Challenge 4, and is also available as a
+standalone site the CTF links to.
 
 ## Academic use
 

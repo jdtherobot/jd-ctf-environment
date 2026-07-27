@@ -11,7 +11,7 @@ The right box holds a field note you can view in-game and download; every other 
 One file, zero dependencies. Either:
 
 - open `index.html` directly in a browser, or
-- serve the folder from any static host (target deploy: `britt.gg/ctf/warehouse/`).
+- serve the folder from any static host (target deploy: `britt.gg/jd-ctf-environment/warehouse-game/`).
 
 It is plain static content — no build step, no special response headers, no network
 requests at runtime (all CSS/JS/art is inline; the world and sprites are drawn
