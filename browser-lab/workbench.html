@@ -453,8 +453,6 @@ file *              # ask what each file really is</pre>
   var $ = function(id){ return document.getElementById(id); };
 
   // Chiral banner painted after boot (ASCII only — the serial console isn't UTF-8).
-  // Until the disk image is rebuilt it still boots as "badger-lab"; settleTerminal()
-  // renames the host and repaints this over the old banner so the visible box is Chiral.
   var CHIRAL_BANNER=[
     "  ____ _   _ ___ ____      _    _",
     " / ___| | | |_ _|  _ \\    / \\  | |",
@@ -506,9 +504,9 @@ file *              # ask what each file really is</pre>
       warehouse:true,
       flag:"81223d18eaf595d4324aa3a8f7f23598ec769a20c12812cc15fec534da2b4d71",
       hints:[
-        { cost:25, body:"Have you beaten Steganography lvl 2? This challenge reuses the exact same document you pulled out of lvl 2 — and if you kept it, the end of this one gets a lot easier." },
-        { cost:50, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = bay depth (front = 1, back = 2); L3 = shelf level (bottom = 1 → top = 3); L4 = sub-section of that bay's grate; and the offset = the box number." },
-        { cost:75, spoiler:true, body:"Split the low 48 bits of the VA into [L4 9][L3 9][L2 9][L1 9][OFFSET 12] — the top group is Level 4, exactly as in the page-table document. Then walk the floor L1 → L4 (row → bay → shelf → sub) and let the offset pick the box." }
+        { cost:50, body:"Have you beaten Steganography lvl 2? This challenge reuses the exact same document you pulled out of lvl 2 — and if you kept it, the end of this one gets a lot easier." },
+        { cost:100, body:"Each level of the walk is one warehouse coordinate — L1 = row (1–10); L2 = bay depth (front = 1, back = 2); L3 = shelf level (bottom = 1 → top = 3); L4 = subsection of that bay's grid; and the offset = the box number." },
+        { cost:200, spoiler:true, body:"Split the low 48 bits of the VA into [L4 9][L3 9][L2 9][L1 9][OFFSET 12] — the top group is Level 4, exactly as in the page-table document. Then walk the floor L1 → L4 (row → bay → shelf → sub) and let the offset pick the box." }
       ] }
   ];
 
