@@ -149,11 +149,11 @@
     vgabios: "https://cdn.jsdelivr.net/gh/copy/v86@" + V86_SHA + "/bios/vgabios.bin",
   };
 
-  // Two boot targets. The harness ships pointed at BASE, which is a small,
-  // known-good, CORS-open image proven to boot a real Linux shell in-browser —
-  // so "Launch Terminal" always works. LAB is the production image built by
-  // ../image/ (Debian i386 + full toolkit + challenge files baked in); flip
-  // ACTIVE to "lab" once that image is hosted alongside this page.
+  // Two boot targets. BASE is a small, known-good, CORS-open image proven to
+  // boot a real Linux shell in-browser — the fallback, so "Launch Terminal"
+  // always works. LAB is the production image built by ../image/ (Debian i386
+  // + full toolkit + challenge files baked in); that image is now hosted
+  // alongside this page, so ACTIVE is set to "lab" below.
   var IMAGES = {
     base: {
       // Same-origin vendored kernel. i.copy.sh hotlink-blocks cross-origin browser
