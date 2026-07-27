@@ -1264,13 +1264,13 @@ faceGrid.addEventListener('click',e=>{
   if(isTarget(f.row,lvl,f.bay,f.sub,box)){
     if(!found){
       found=true;
-      foundLoc='Row '+f.row+' · Shelf '+lvl+' · Bay '+f.bay+(f.bay===1?' (front)':' (back)')+' · Sub '+f.sub+' · Box '+box;
+      foundLoc='Row '+f.row+' · Bay '+f.bay+(f.bay===1?' (front)':' (back)')+' · Shelf '+lvl+' · Sub '+f.sub+' · Box '+box;
       saveProgress();updateInvCount();
     }
     sfx.found();
     openNote();
   }else{
-    inspectResult.innerHTML='<span class="none">Level '+lvl+' · Box '+box+' — <b>Nothing here.</b></span>';
+    inspectResult.innerHTML='<span class="none">Shelf '+lvl+' · Box '+box+' — <b>Nothing here.</b></span>';
     sfx.none();
   }
 });
