@@ -14,6 +14,16 @@ and the warehouse game. This guide takes it from "in the repo" to "live on the s
 
 ### Re-deploying `gh-pages` (the exact commands)
 
+The whole sequence below is scripted — the usual way to deploy is one command:
+
+```bash
+bash browser-lab/image/build-image.sh    # only if image inputs changed
+bash browser-lab/deploy-gh-pages.sh "Deploy: <what changed>"
+```
+
+It stages + gates the bundle, pushes the deploy commit, and waits for the Pages build. The manual
+steps below are what it runs, kept as reference.
+
 `gh-pages` history is **incremental** (each deploy is a normal commit on the previous tip — never
 re-orphan, never force-push). The image lives only on this branch, so publish from a throwaway clone
 that never downloads the old image blobs:
@@ -31,7 +41,7 @@ git fetch -q --depth=1 --filter=blob:none origin gh-pages   # commits + trees on
 find "$BUNDLE" -name .DS_Store -delete
 git --work-tree="$BUNDLE" add -A
 C=$(git commit-tree "$(git write-tree)" -p FETCH_HEAD -m "Deploy: <what changed>")
-git push origin "$C:refs/heads/gh-pages"        # normal push, NOT forced
+git push origin "${C}:refs/heads/gh-pages"      # normal push, NOT forced; brace ${C} — zsh eats "$C:r..." as a :r modifier
 ```
 
 Never `git checkout`/`git status` inside that clone — with `--filter=blob:none` those would fault-in
